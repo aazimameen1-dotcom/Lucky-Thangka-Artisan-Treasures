@@ -803,19 +803,218 @@ img {
     cursor: pointer;
 }
 
-/* Responsive */
+/* Responsive - Mobile First Approach */
+
+/* Tablet and below (1024px) */
 @media (max-width: 1024px) {
     .container { padding: 0 4%; }
     .hero h1 { font-size: 3rem; }
+    .section-title h2 { font-size: 2rem; }
 }
 
+/* Mobile Large (768px) */
 @media (max-width: 768px) {
+    /* Navigation */
     .nav-links { display: none; }
     .menu-toggle { display: block; }
-    .hero h1 { font-size: 2.5rem; }
-    .contact-container { flex-direction: column; }
-    .product-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-    .footer-content { flex-direction: column; }
-    .hero-actions { flex-direction: column; gap: 1rem; }
-    .alignment-wrapper { flex-direction: column; }
+    .navbar { padding: 1rem 0; }
+    
+    /* Hero */
+    .hero { min-height: 100vh; height: auto; padding: 100px 0 60px; }
+    .hero h1 { font-size: 2rem; line-height: 1.3; }
+    .hero-desc { font-size: 1rem; padding: 0 1rem; }
+    .hero-actions { flex-direction: column; gap: 1rem; padding: 0 1rem; }
+    .hero-actions .btn { width: 100%; max-width: 280px; }
+    
+    /* Sections */
+    .collection-section { padding: 3rem 0; }
+    .section-title { margin-bottom: 2rem; }
+    .section-title h2 { font-size: 1.8rem; }
+    .eyebrow { font-size: 0.8rem; }
+    
+    /* Product Grid - Single column on mobile */
+    .product-grid { 
+        grid-template-columns: 1fr; 
+        gap: 1.5rem;
+        padding: 0 0.5rem;
+    }
+    
+    /* Product Cards */
+    .product-card { margin: 0 auto; max-width: 100%; }
+    .product-image { height: 250px; }
+    .product-info { padding: 1.5rem; }
+    .product-info h3 { font-size: 1.1rem; }
+    .product-desc { font-size: 0.9rem; }
+    
+    /* Buttons */
+    .btn { 
+        padding: 0.9rem 1.5rem; 
+        font-size: 1rem;
+        min-height: 48px; /* Touch-friendly */
+    }
+    
+    /* Authenticity */
+    .authenticity-section { padding: 3rem 0; }
+    .auth-grid { 
+        grid-template-columns: 1fr; 
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+    .auth-item { padding: 1rem 0; }
+    .auspicious-divider { margin-top: 2rem; }
+    
+    /* Alignment Wrapper */
+    .alignment-wrapper { flex-direction: column; gap: 2rem; }
+    .half-col { flex: 1 1 100%; }
+    .half-col img { max-height: 300px; object-fit: cover; }
+    
+    /* Testimonials */
+    .testimonials-section { padding: 3rem 0; }
+    .testimonial-grid { 
+        grid-template-columns: 1fr; 
+        gap: 1.5rem;
+        padding: 0 0.5rem;
+    }
+    .testimonial-card { padding: 1.5rem; }
+    .testimonial-card::before { font-size: 3rem; }
+    
+    /* Contact */
+    .contact-section { padding: 3rem 0; }
+    .contact-container { flex-direction: column; gap: 2rem; }
+    .contact-form-wrapper { padding: 1.5rem; }
+    .contact-form h3 { font-size: 1.5rem; }
+    .map-container { margin-top: 2rem; height: 200px; }
+    .map-container iframe { height: 200px !important; }
+    
+    /* Form */
+    .form-group { margin-bottom: 1rem; }
+    .form-group input,
+    .form-group textarea { 
+        padding: 0.9rem; 
+        font-size: 16px; /* Prevents zoom on iOS */
+        min-height: 48px;
+    }
+    
+    /* Footer */
+    .footer { padding: 2rem 0 1.5rem; }
+    .footer-content { 
+        flex-direction: column; 
+        gap: 2rem;
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+    .footer-brand p { max-width: 100%; }
+    .footer-links { text-align: center; }
+    
+    /* WhatsApp Float */
+    .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        font-size: 28px;
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    /* Modal */
+    .modal-content { 
+        padding: 2rem 1.5rem; 
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+    .close-modal { top: 10px; right: 15px; }
+}
+
+/* Mobile Small (480px) */
+@media (max-width: 480px) {
+    .container { padding: 0 3%; }
+    
+    .hero h1 { font-size: 1.7rem; }
+    .hero-desc { font-size: 0.95rem; }
+    
+    .section-title h2 { font-size: 1.5rem; }
+    
+    /* Product Cards */
+    .product-image { height: 220px; }
+    .product-info { padding: 1.2rem; }
+    .badge { 
+        font-size: 0.7rem; 
+        padding: 0.15rem 0.6rem;
+        top: 0.8rem;
+        right: 0.8rem;
+    }
+    
+    /* Mobile Menu */
+    .mobile-menu { max-width: 280px; padding: 1.5rem; }
+    .mobile-nav-links { margin-top: 3rem; gap: 1.2rem; }
+    .mobile-link { font-size: 1.1rem; }
+    
+    /* Scroll indicator smaller */
+    .scroll-indicator { bottom: 1rem; }
+    .scroll-indicator p { font-size: 0.7rem; }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn:hover { transform: none; }
+    .product-card:hover { transform: none; }
+    .product-card:hover .product-image img { transform: none; }
+    .auth-item:hover .icon-wrapper { transform: none; }
+    .social-links a:hover { transform: none; }
+    
+    /* Larger touch targets */
+    .btn, 
+    .mobile-link,
+    .inquire-btn,
+    .menu-toggle,
+    .close-menu { 
+        min-height: 44px; 
+        min-width: 44px;
+    }
+}
+
+/* Landscape Mode */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero { min-height: auto; padding: 80px 0 40px; }
+    .hero h1 { font-size: 1.8rem; }
+    .scroll-indicator { display: none; }
+}
+
+/* High DPI / Retina Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    img { image-rendering: -webkit-optimize-contrast; }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --cream: #1a1a1a;
+        --sand: #2d2d2d;
+        --text-main: #e0e0e0;
+        --text-muted: #a0a0a0;
+    }
+    
+    body { background-color: var(--cream); }
+    .product-card { background: #2d2d2d; }
+    .testimonial-card { background: #2d2d2d; }
+    .contact-form-wrapper { background: #2d2d2d; }
+    .auth-grid .icon-wrapper { background: #3d3d3d; }
+}
+
+/* Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .transform-up,
+    .pop-in {
+        opacity: 1;
+        transform: none;
+    }
+    
+    .scroll-indicator { animation: none; }
 }

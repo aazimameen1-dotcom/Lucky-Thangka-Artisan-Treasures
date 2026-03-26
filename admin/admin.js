@@ -645,6 +645,35 @@ function initDashboard() {
         }
     });
 
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const adminSidebar = document.getElementById('adminSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (mobileMenuToggle && adminSidebar) {
+        mobileMenuToggle.addEventListener('click', () => {
+            adminSidebar.classList.toggle('active');
+            sidebarOverlay?.classList.toggle('active');
+        });
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            adminSidebar?.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+    
+    // Close sidebar when clicking nav items on mobile
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                adminSidebar?.classList.remove('active');
+                sidebarOverlay?.classList.remove('active');
+            }
+        });
+    });
+
     // Initial render
     renderProducts();
 }
