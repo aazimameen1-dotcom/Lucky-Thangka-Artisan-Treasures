@@ -298,11 +298,26 @@ window.ProductAPI = {
 };
 
 // ============================================================
-//  REVIEW SYSTEM
+//  SUPABASE CONFIG
+// ============================================================
+
+const SUPABASE_URL = 'https://cqqrgodgzcyuiarfajhm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcXJnb2RnemN5dWlhcmZhamhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjA4MDUsImV4cCI6MjA5MDA5NjgwNX0.oYRHrJpOpRPnmJs6FcFzxTsBJTWN9bFyAs24Fj9Q9GE';
+
+let supabase = null;
+try {
+    supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+} catch (e) {
+    console.warn('Supabase not available, using localStorage fallback');
+}
+
+// ============================================================
+//  REVIEW SYSTEM (Supabase-powered)
 // ============================================================
 
 const REVIEWS_KEY = 'lt_reviews';
 
+// Fallback reviews if Supabase is empty or unavailable
 const DEFAULT_REVIEWS = [
     {
         id: 'r1',
@@ -310,7 +325,7 @@ const DEFAULT_REVIEWS = [
         location: 'USA',
         rating: 5,
         text: 'The vibration of my Heart Chakra singing bowl is profoundly deep. You can feel the authenticity, and their service was exceptional.',
-        date: '2026-02-15T10:30:00Z'
+        created_at: '2026-02-15T10:30:00Z'
     },
     {
         id: 'r2',
@@ -318,7 +333,7 @@ const DEFAULT_REVIEWS = [
         location: 'India',
         rating: 5,
         text: 'My White Tara Thangka arrived with its certificate of authenticity. The painting is mesmerizing and brings such a peaceful energy to our home.',
-        date: '2026-03-01T14:20:00Z'
+        created_at: '2026-03-01T14:20:00Z'
     },
     {
         id: 'r3',
@@ -326,36 +341,84 @@ const DEFAULT_REVIEWS = [
         location: 'UK',
         rating: 5,
         text: 'Found an incredible vintage brass statue here. The packaging was extremely secure, a trustworthy destination for high-value antiques.',
-        date: '2026-03-10T09:15:00Z'
+        created_at: '2026-03-10T09:15:00Z'
     }
 ];
 
-function getReviews() {
-    const stored = localStorage.getItem(REVIEWS_KEY);
-    if (!stored) {
-        localStorage.setItem(REVIEWS_KEY, JSON.stringify(DEFAULT_REVIEWS));
-        return [...DEFAULT_REVIEWS];
+async function getReviews() {
+    // Try Supabase first
+    if (supabase) {
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (!error && data && data.length > 0) {
+                // Cache in localStorage
+                localStorage.setItem(REVIEWS_KEY, JSON.stringify(data));
+                return data;
+            }
+        } catch (e) {
+            console.warn('Supabase fetch failed, using cache:', e);
+        }
     }
-    return JSON.parse(stored);
+
+    // Fallback to localStorage
+    const stored = localStorage.getItem(REVIEWS_KEY);
+    if (stored) return JSON.parse(stored);
+    return [...DEFAULT_REVIEWS];
 }
 
-function saveReview(review) {
-    const reviews = getReviews();
-    reviews.unshift(review);
+async function saveReview(reviewData) {
+    // Save to Supabase
+    if (supabase) {
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .insert([{
+                    name: reviewData.name,
+                    location: reviewData.location,
+                    rating: reviewData.rating,
+                    text: reviewData.text
+                }])
+                .select();
+
+            if (!error && data) {
+                return true;
+            }
+            console.warn('Supabase insert error:', error);
+        } catch (e) {
+            console.warn('Supabase save failed:', e);
+        }
+    }
+
+    // Fallback: save to localStorage
+    const reviews = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]');
+    reviews.unshift({
+        ...reviewData,
+        id: 'r_' + Date.now().toString(36),
+        created_at: new Date().toISOString()
+    });
     localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+    return true;
 }
 
-function renderReviews() {
-    const reviews = getReviews();
+function renderReviewCards(reviews) {
     const grid = document.getElementById('reviewsGrid');
     if (!grid) return;
+
+    if (reviews.length === 0) {
+        grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">No reviews yet. Be the first to share your experience!</p>';
+        return;
+    }
 
     grid.innerHTML = reviews.map(r => {
         const starsHtml = Array.from({length: 5}, (_, i) =>
             `<i class="fa-solid fa-star" style="color: ${i < r.rating ? 'var(--gold)' : '#ddd'}"></i>`
         ).join('');
 
-        const dateStr = new Date(r.date).toLocaleDateString('en-US', {
+        const dateStr = new Date(r.created_at).toLocaleDateString('en-US', {
             year: 'numeric', month: 'short', day: 'numeric'
         });
 
@@ -371,7 +434,6 @@ function renderReviews() {
         `;
     }).join('');
 
-    // Update summary
     updateReviewSummary(reviews);
 }
 
@@ -401,9 +463,10 @@ function updateReviewSummary(reviews) {
     }
 }
 
-function setupReviewSystem() {
-    // Render existing reviews
-    renderReviews();
+async function setupReviewSystem() {
+    // Load and render reviews from Supabase
+    const reviews = await getReviews();
+    renderReviewCards(reviews);
 
     // Toggle review form
     const toggleBtn = document.getElementById('toggleReviewForm');
@@ -435,7 +498,6 @@ function setupReviewSystem() {
         const stars = starSelector.querySelectorAll('i');
         let currentRating = 5;
 
-        // Initialize all stars as active
         stars.forEach(s => s.classList.add('active'));
 
         stars.forEach(star => {
@@ -465,47 +527,56 @@ function setupReviewSystem() {
     // Review form submission
     const reviewForm = document.getElementById('reviewForm');
     if (reviewForm) {
-        reviewForm.addEventListener('submit', (e) => {
+        reviewForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const submitBtn = reviewForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+            submitBtn.disabled = true;
 
             const name = document.getElementById('reviewerName')?.value.trim();
             const location = document.getElementById('reviewerLocation')?.value.trim();
             const rating = parseInt(document.getElementById('reviewRating')?.value || '5');
             const text = document.getElementById('reviewText')?.value.trim();
 
-            if (!name || !text) return;
-
-            const review = {
-                id: 'r_' + Date.now().toString(36),
-                name,
-                location,
-                rating,
-                text,
-                date: new Date().toISOString()
-            };
-
-            saveReview(review);
-            renderReviews();
-            reviewForm.reset();
-
-            // Reset stars
-            if (starSelector) {
-                starSelector.querySelectorAll('i').forEach(s => s.classList.add('active'));
+            if (!name || !text) {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                return;
             }
-            if (ratingInput) ratingInput.value = 5;
 
-            // Hide form, show button
-            if (formWrapper) formWrapper.style.display = 'none';
-            if (toggleBtn) toggleBtn.style.display = 'inline-flex';
+            const success = await saveReview({ name, location, rating, text });
 
-            // Show toast
-            showReviewToast('Thank you! Your review has been submitted.');
+            if (success) {
+                // Reload reviews from Supabase
+                const updatedReviews = await getReviews();
+                renderReviewCards(updatedReviews);
+
+                reviewForm.reset();
+
+                // Reset stars
+                if (starSelector) {
+                    starSelector.querySelectorAll('i').forEach(s => s.classList.add('active'));
+                }
+                if (ratingInput) ratingInput.value = 5;
+
+                // Hide form, show button
+                if (formWrapper) formWrapper.style.display = 'none';
+                if (toggleBtn) toggleBtn.style.display = 'inline-flex';
+
+                showReviewToast('Thank you! Your review has been submitted.');
+            } else {
+                showReviewToast('Something went wrong. Please try again.');
+            }
+
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
         });
     }
 }
 
 function showReviewToast(message) {
-    // Create toast if it doesn't exist
     let toast = document.querySelector('.review-toast');
     if (!toast) {
         toast = document.createElement('div');

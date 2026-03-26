@@ -55,6 +55,11 @@
                 <span>Inquiries</span>
                 <span class="nav-badge" id="navInquiryCount">0</span>
             </a>
+            <a href="#reviews" class="nav-item" data-section="reviews">
+                <i class="fa-solid fa-star"></i>
+                <span>Reviews</span>
+                <span class="nav-badge" id="navReviewCount">0</span>
+            </a>
             <div class="nav-section-label">System</div>
             <a href="#settings" class="nav-item" data-section="settings">
                 <i class="fa-solid fa-cog"></i>
@@ -405,6 +410,35 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== REVIEWS SECTION ==================== -->
+        <section id="section-reviews" class="content-section" style="display: none;">
+            <div class="section-header">
+                <div>
+                    <h2>Customer Reviews</h2>
+                    <p class="section-subtitle">Manage reviews submitted by customers via Supabase</p>
+                </div>
+            </div>
+
+            <div class="reviews-admin-summary" id="adminReviewSummary">
+                <div class="stat-mini">
+                    <i class="fa-solid fa-star"></i>
+                    <span id="adminAvgRating">5.0</span> avg rating
+                </div>
+                <div class="stat-mini">
+                    <i class="fa-solid fa-comments"></i>
+                    <span id="adminTotalReviews">0</span> total reviews
+                </div>
+            </div>
+
+            <div class="admin-reviews-list" id="adminReviewsList">
+                <div class="empty-state">
+                    <i class="fa-solid fa-star" style="font-size:3rem;color:var(--gold);margin-bottom:1rem;"></i>
+                    <h3>No reviews yet</h3>
+                    <p>Customer reviews will appear here once submitted.</p>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- ==================== ADD/EDIT PRODUCT MODAL ==================== -->
@@ -536,6 +570,7 @@
         <span id="toastMessage">Operation successful</span>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="admin.js"></script>
 </body>
 </html>

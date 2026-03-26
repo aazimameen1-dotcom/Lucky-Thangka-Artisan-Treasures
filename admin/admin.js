@@ -996,8 +996,155 @@ document.addEventListener('DOMContentLoaded', () => {
         initLogin();
     } else if (document.querySelector('.admin-body')) {
         initDashboard();
+        // Load reviews after dashboard init
+        loadAdminReviews();
     }
 });
+
+// ============================================================
+//  SUPABASE CONFIG (for Reviews)
+// ============================================================
+
+const SUPABASE_URL = 'https://cqqrgodgzcyuiarfajhm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcXJnb2RnemN5dWlhcmZhamhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjA4MDUsImV4cCI6MjA5MDA5NjgwNX0.oYRHrJpOpRPnmJs6FcFzxTsBJTWN9bFyAs24Fj9Q9GE';
+
+let supabaseAdmin = null;
+try {
+    supabaseAdmin = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+} catch (e) {
+    console.warn('Supabase not available for admin');
+}
+
+// ============================================================
+//  REVIEW MANAGEMENT
+// ============================================================
+
+async function loadAdminReviews() {
+    if (!supabaseAdmin) {
+        renderAdminReviews([]);
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('reviews')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            renderAdminReviews(data);
+        } else {
+            console.warn('Failed to load reviews:', error);
+            renderAdminReviews([]);
+        }
+    } catch (e) {
+        console.warn('Error loading reviews:', e);
+        renderAdminReviews([]);
+    }
+}
+
+function renderAdminReviews(reviews) {
+    const list = document.getElementById('adminReviewsList');
+    const navBadge = document.getElementById('navReviewCount');
+    const avgRatingEl = document.getElementById('adminAvgRating');
+    const totalReviewsEl = document.getElementById('adminTotalReviews');
+
+    if (navBadge) navBadge.textContent = reviews.length;
+    if (totalReviewsEl) totalReviewsEl.textContent = reviews.length;
+
+    if (avgRatingEl && reviews.length > 0) {
+        const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+        avgRatingEl.textContent = avg.toFixed(1);
+    }
+
+    if (!list) return;
+
+    if (reviews.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-star" style="font-size:3rem;color:#D4AF37;margin-bottom:1rem;"></i>
+                <h3>No reviews yet</h3>
+                <p>Customer reviews will appear here once submitted.</p>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = reviews.map(r => {
+        const starsHtml = Array.from({length: 5}, (_, i) =>
+            `<i class="fa-solid fa-star${i < r.rating ? '' : ' dim'}"></i>`
+        ).join('');
+
+        const dateStr = new Date(r.created_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        return `
+            <div class="admin-review-card" data-review-id="${r.id}">
+                <div class="review-card-content">
+                    <div class="review-card-header">
+                        <span class="review-card-name">${escapeHTML(r.name)}</span>
+                        ${r.location ? `<span class="review-card-location">${escapeHTML(r.location)}</span>` : ''}
+                        <span class="review-card-stars">${starsHtml}</span>
+                    </div>
+                    <p class="review-card-text">"${escapeHTML(r.text)}"</p>
+                    <span class="review-card-date">${dateStr}</span>
+                </div>
+                <div class="review-card-actions">
+                    <button class="btn-delete-review" onclick="deleteReview('${r.id}')">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function escapeHTML(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+async function deleteReview(reviewId) {
+    if (!confirm('Are you sure you want to delete this review? This cannot be undone.')) return;
+
+    if (!supabaseAdmin) {
+        showToast('Supabase not connected', 'error');
+        return;
+    }
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('reviews')
+            .delete()
+            .eq('id', reviewId);
+
+        if (!error) {
+            showToast('Review deleted successfully');
+            // Remove the card with animation
+            const card = document.querySelector(`[data-review-id="${reviewId}"]`);
+            if (card) {
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    card.remove();
+                    loadAdminReviews(); // Refresh counts
+                }, 300);
+            } else {
+                loadAdminReviews();
+            }
+        } else {
+            console.warn('Delete error:', error);
+            showToast('Failed to delete review: ' + error.message, 'error');
+        }
+    } catch (e) {
+        console.warn('Delete failed:', e);
+        showToast('Network error. Please try again.', 'error');
+    }
+}
 
 // ============================================================
 //  PUBLIC API (for main site access)
