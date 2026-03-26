@@ -525,6 +525,9 @@ function initLogin() {
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
     
+    // Clear any stuck login state on login page load
+    localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
+    
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -539,16 +542,16 @@ function initLogin() {
                     // Set login state
                     localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
                     
-                    // Redirect to admin dashboard with absolute path
-                    const currentPath = window.location.pathname;
-                    const adminPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-                    window.location.href = adminPath + 'admin.html';
+                    // Redirect to admin dashboard
+                    window.location.href = 'admin.html';
                 } else {
                     // Show error
                     if (loginError) {
                         loginError.textContent = 'Invalid username or password';
                         loginError.style.display = 'block';
                     }
+                    // Clear login state on failed attempt
+                    localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
                 }
             } catch (err) {
                 console.error('Login error:', err);
