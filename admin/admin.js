@@ -1,330 +1,96 @@
 /**
- * Lucky Thangka Admin Panel with Supabase
- * Handles authentication, product CRUD, and cloud data management
+ * Lucky Thangka — Admin Panel
+ * Complete product management with image uploads and localStorage persistence
  */
 
-// Supabase configuration
-const SUPABASE_URL = 'https://cqqrgodgzcyuiarfajhm.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcXJnb2RnemN5dWlhcmZhamhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjA4MDUsImV4cCI6MjA5MDA5NjgwNX0.oYRHrJpOpRPnmJs6FcFzxTsBJTWN9bFyAs24Fj9Q9GE';
+// ============================================================
+//  CONFIGURATION
+// ============================================================
 
-// Initialize Supabase client
-let supabase = null;
-if (window.supabase) {
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase connected');
-    } catch (e) {
-        console.warn('Supabase initialization failed:', e);
-    }
-} else {
-    console.warn('Supabase library not loaded');
-}
-
-// Default admin credentials (fallback)
 const ADMIN_CREDENTIALS = {
     username: 'admin',
     password: 'admin123'
 };
 
-// Storage keys
 const STORAGE_KEYS = {
     isLoggedIn: 'lt_admin_logged_in',
     products: 'lt_products',
-    settings: 'lt_settings'
+    settings: 'lt_settings',
+    inquiries: 'lt_inquiries'
 };
 
-// Sample products to initialize if none exist
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Default sample products
 const SAMPLE_PRODUCTS = [
     {
-        id: '1',
+        id: 'sample_1',
         name: 'Green Tara Thangka',
         category: 'thangkas',
-        description: 'Exquisite hand-painted deity of enlightened activity and abundance. Adorned with 24k gold detailing.',
+        description: 'Exquisite hand-painted deity of enlightened activity and abundance. Adorned with 24k gold detailing. Blessed by a Buddhist monk for spiritual protection.',
         badge: 'Prosperity Thangka',
-        image: '../images/hero.png'
+        price: '₹12,000 - ₹25,000',
+        image: '../images/hero.png',
+        created_at: new Date().toISOString()
     },
     {
-        id: '2',
+        id: 'sample_2',
         name: 'Medicine Buddha',
         category: 'thangkas',
-        description: 'Masterpiece depicting the supreme healer. Blessed to bring physical and spiritual well-being.',
+        description: 'Masterpiece depicting the supreme healer. Blessed to bring physical and spiritual well-being. Hand-painted with natural mineral pigments.',
         badge: 'Healing Thangka',
-        image: 'https://images.unsplash.com/photo-1596707338006-c87515b88bdc?q=80&w=600&auto=format&fit=crop'
+        price: '₹15,000 - ₹30,000',
+        image: 'https://images.unsplash.com/photo-1596707338006-c87515b88bdc?q=80&w=600&auto=format&fit=crop',
+        created_at: new Date().toISOString()
     },
     {
-        id: '3',
+        id: 'sample_3',
         name: 'Wheel of Life (Bhavachakra)',
         category: 'thangkas',
-        description: 'Intricate representation of the cyclic existence, a profound meditation tool for protection.',
+        description: 'Intricate representation of the cyclic existence, a profound meditation tool for spiritual protection and contemplation.',
         badge: 'Protection Thangka',
-        image: 'https://images.unsplash.com/photo-1614704383441-26b6807dba84?q=80&w=600&auto=format&fit=crop'
+        price: '₹18,000 - ₹35,000',
+        image: 'https://images.unsplash.com/photo-1614704383441-26b6807dba84?q=80&w=600&auto=format&fit=crop',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'sample_4',
+        name: 'Heart Chakra Singing Bowl',
+        category: 'bowls',
+        description: 'Hand-hammered seven-metal alloy singing bowl tuned to the Heart Chakra (F note). Produces deep, resonant tones for meditation and healing.',
+        badge: 'Chakra Bowl',
+        price: '₹3,500 - ₹8,000',
+        image: '../images/bowl.png',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'sample_5',
+        name: 'Vintage Brass Statue Collection',
+        category: 'antiques',
+        description: 'Rare collection of old brass Buddhist statues, vintage copper urli, and traditional prayer artifacts. Each piece is authenticated.',
+        badge: 'Antique',
+        price: '₹8,000 - ₹50,000',
+        image: '../images/antique.png',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'sample_6',
+        name: 'Kashmiri Miniature Painting',
+        category: 'paintings',
+        description: 'Original Kashmiri miniature painting depicting a serene Dal Lake scene. Rich detailed brushwork with gold leaf accents by master artisan.',
+        badge: 'Original Art',
+        price: '₹6,000 - ₹20,000',
+        image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600&auto=format&fit=crop',
+        created_at: new Date().toISOString()
     }
 ];
 
-// ============== SUPABASE PRODUCT OPERATIONS ==============
-
-async function getProductsFromSupabase() {
-    if (!supabase) return getProductsFromLocal();
-    
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        // Cache locally for offline access
-        if (data && data.length > 0) {
-            localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(data));
-        }
-        
-        return data || getProductsFromLocal();
-    } catch (err) {
-        console.warn('Supabase fetch failed, using localStorage:', err);
-        return getProductsFromLocal();
-    }
-}
-
-async function addProductToSupabase(product) {
-    if (!supabase) return addProductToLocal(product);
-    
-    try {
-        // Upload image to Supabase Storage if it's base64
-        if (product.image && product.image.startsWith('data:')) {
-            const imageUrl = await uploadImageToStorage(product.image, product.id);
-            if (imageUrl) product.image = imageUrl;
-        }
-        
-        const { data, error } = await supabase
-            .from('products')
-            .insert([product])
-            .select()
-            .single();
-        
-        if (error) throw error;
-        
-        // Also save to localStorage as backup
-        addProductToLocal(data || product);
-        return data || product;
-    } catch (err) {
-        console.warn('Supabase insert failed, using localStorage:', err);
-        return addProductToLocal(product);
-    }
-}
-
-async function updateProductInSupabase(id, updates) {
-    if (!supabase) return updateProductInLocal(id, updates);
-    
-    try {
-        // Upload new image if provided as base64
-        if (updates.image && updates.image.startsWith('data:')) {
-            const imageUrl = await uploadImageToStorage(updates.image, id);
-            if (imageUrl) updates.image = imageUrl;
-        }
-        
-        const { data, error } = await supabase
-            .from('products')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-        
-        if (error) throw error;
-        
-        // Update localStorage too
-        updateProductInLocal(id, data || updates);
-        return data || updates;
-    } catch (err) {
-        console.warn('Supabase update failed, using localStorage:', err);
-        return updateProductInLocal(id, updates);
-    }
-}
-
-async function deleteProductFromSupabase(id) {
-    if (!supabase) return deleteProductFromLocal(id);
-    
-    try {
-        const { error } = await supabase
-            .from('products')
-            .delete()
-            .eq('id', id);
-        
-        if (error) throw error;
-        
-        // Also delete from localStorage
-        deleteProductFromLocal(id);
-        return true;
-    } catch (err) {
-        console.warn('Supabase delete failed, using localStorage:', err);
-        return deleteProductFromLocal(id);
-    }
-}
-
-async function uploadImageToStorage(base64Image, productId) {
-    if (!supabase) return null;
-    
-    try {
-        // Convert base64 to blob
-        const response = await fetch(base64Image);
-        const blob = await response.blob();
-        
-        const fileName = `product-${productId}-${Date.now()}.jpg`;
-        
-        const { data, error } = await supabase
-            .storage
-            .from('products')
-            .upload(fileName, blob, {
-                contentType: 'image/jpeg',
-                cacheControl: '3600'
-            });
-        
-        if (error) throw error;
-        
-        // Get public URL
-        const { data: urlData } = supabase
-            .storage
-            .from('products')
-            .getPublicUrl(fileName);
-        
-        return urlData.publicUrl;
-    } catch (err) {
-        console.error('Image upload failed:', err);
-        return null;
-    }
-}
-
-// ============== LOCAL FALLBACK OPERATIONS ==============
-
-function getProductsFromLocal() {
-    const stored = localStorage.getItem(STORAGE_KEYS.products);
-    if (!stored) {
-        localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(SAMPLE_PRODUCTS));
-        return SAMPLE_PRODUCTS;
-    }
-    return JSON.parse(stored);
-}
-
-function addProductToLocal(product) {
-    const products = getProductsFromLocal();
-    product.id = generateId();
-    product.created_at = new Date().toISOString();
-    products.push(product);
-    localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
-    return product;
-}
-
-function updateProductInLocal(id, updates) {
-    const products = getProductsFromLocal();
-    const index = products.findIndex(p => p.id === id);
-    if (index !== -1) {
-        products[index] = { ...products[index], ...updates, updated_at: new Date().toISOString() };
-        localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
-        return products[index];
-    }
-    return null;
-}
-
-function deleteProductFromLocal(id) {
-    const products = getProductsFromLocal();
-    const filtered = products.filter(p => p.id !== id);
-    localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(filtered));
-    return true;
-}
-
-// Legacy functions for backward compatibility
-function getProducts() { return getProductsFromLocal(); }
-function saveProducts(products) { localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products)); }
-function addProduct(product) { return addProductToLocal(product); }
-function updateProduct(id, updates) { return updateProductInLocal(id, updates); }
-function deleteProduct(id) { return deleteProductFromLocal(id); }
-
-// ============== IMAGE HANDLING ==============
-
-function handleImageUpload(file) {
-    return new Promise((resolve, reject) => {
-        if (!file) {
-            resolve(null);
-            return;
-        }
-
-        // Check file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            reject('Image size must be less than 2MB');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            resolve(e.target.result); // Base64 string
-        };
-        reader.onerror = () => reject('Failed to read image');
-        reader.readAsDataURL(file);
-    });
-}
+// ============================================================
+//  UTILITY FUNCTIONS
+// ============================================================
 
 function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// ============== UI RENDERING ==============
-
-async function renderProducts(searchTerm = '') {
-    const grid = document.getElementById('productsGrid');
-    const emptyState = document.getElementById('emptyState');
-    if (!grid) return;
-
-    // Show loading state
-    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Loading products...</p></div>';
-
-    let products = await getProductsFromSupabase();
-
-    // Filter by search term
-    if (searchTerm) {
-        products = products.filter(p =>
-            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.description.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }
-
-    if (products.length === 0 && !searchTerm) {
-        grid.innerHTML = '';
-        emptyState.style.display = 'block';
-        return;
-    }
-
-    emptyState.style.display = 'none';
-
-    grid.innerHTML = products.map(product => `
-        <div class="product-admin-card" data-id="${product.id}">
-            <div class="product-image-wrapper">
-                <img src="${product.image || '../images/placeholder.png'}" alt="${product.name}" loading="lazy">
-                ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
-            </div>
-            <div class="product-admin-info">
-                <h4>${product.name}</h4>
-                <p class="product-category">${getCategoryName(product.category)}</p>
-                <p class="product-desc">${product.description.substring(0, 80)}...</p>
-            </div>
-            <div class="product-admin-actions">
-                <button class="btn-icon edit-btn" title="Edit" data-id="${product.id}">
-                    <i class="fa-solid fa-edit"></i>
-                </button>
-                <button class="btn-icon delete-btn" title="Delete" data-id="${product.id}">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-
-    // Attach event listeners
-    grid.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => openEditModal(btn.dataset.id));
-    });
-
-    grid.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
-    });
+    return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
 }
 
 function getCategoryName(category) {
@@ -337,81 +103,383 @@ function getCategoryName(category) {
     return names[category] || category;
 }
 
-// ============== MODAL HANDLING ==============
+function getCategoryIcon(category) {
+    const icons = {
+        'thangkas': 'fa-scroll',
+        'bowls': 'fa-music',
+        'antiques': 'fa-gem',
+        'paintings': 'fa-palette'
+    };
+    return icons[category] || 'fa-box';
+}
+
+function timeAgo(dateStr) {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diff = now - date;
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+}
+
+// ============================================================
+//  PRODUCT CRUD (localStorage)
+// ============================================================
+
+function getProducts() {
+    const stored = localStorage.getItem(STORAGE_KEYS.products);
+    if (!stored) {
+        localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(SAMPLE_PRODUCTS));
+        return [...SAMPLE_PRODUCTS];
+    }
+    return JSON.parse(stored);
+}
+
+function saveProducts(products) {
+    localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
+}
+
+function addProduct(productData) {
+    const products = getProducts();
+    const newProduct = {
+        ...productData,
+        id: generateId(),
+        created_at: new Date().toISOString()
+    };
+    products.unshift(newProduct); // Add to beginning
+    saveProducts(products);
+    return newProduct;
+}
+
+function updateProduct(id, updates) {
+    const products = getProducts();
+    const index = products.findIndex(p => p.id === id);
+    if (index !== -1) {
+        products[index] = {
+            ...products[index],
+            ...updates,
+            updated_at: new Date().toISOString()
+        };
+        saveProducts(products);
+        return products[index];
+    }
+    return null;
+}
+
+function deleteProduct(id) {
+    const products = getProducts();
+    const filtered = products.filter(p => p.id !== id);
+    saveProducts(filtered);
+    return true;
+}
+
+function getProductById(id) {
+    const products = getProducts();
+    return products.find(p => p.id === id) || null;
+}
+
+// ============================================================
+//  IMAGE HANDLING
+// ============================================================
+
+function handleImageUpload(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            resolve(null);
+            return;
+        }
+
+        if (file.size > MAX_IMAGE_SIZE) {
+            reject('Image size must be less than 5MB');
+            return;
+        }
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            reject('Please upload a JPG, PNG, or WEBP image');
+            return;
+        }
+
+        // Compress and convert to base64
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_DIM = 1200;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_DIM || height > MAX_DIM) {
+                    if (width > height) {
+                        height = (height / width) * MAX_DIM;
+                        width = MAX_DIM;
+                    } else {
+                        width = (width / height) * MAX_DIM;
+                        height = MAX_DIM;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Use 0.8 quality for compression
+                const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                resolve(compressed);
+            };
+            img.onerror = () => reject('Failed to process image');
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject('Failed to read image file');
+        reader.readAsDataURL(file);
+    });
+}
+
+// ============================================================
+//  TOAST NOTIFICATIONS
+// ============================================================
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    if (!toast || !toastMessage) return;
+
+    toast.className = 'toast ' + type;
+    const icon = toast.querySelector('i');
+    if (icon) {
+        if (type === 'success') icon.className = 'fa-solid fa-check-circle';
+        else if (type === 'error') icon.className = 'fa-solid fa-exclamation-circle';
+        else if (type === 'warning') icon.className = 'fa-solid fa-exclamation-triangle';
+    }
+    toastMessage.textContent = message;
+
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3500);
+}
+
+// ============================================================
+//  SECTION NAVIGATION
+// ============================================================
+
+function showSection(sectionName) {
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(sectionName + 'Section');
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    const navItem = document.querySelector(`[data-section="${sectionName}"]`);
+    if (navItem) navItem.classList.add('active');
+
+    // Close mobile sidebar
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+}
+
+// ============================================================
+//  MODAL HANDLING
+// ============================================================
 
 let currentEditId = null;
 let currentDeleteId = null;
 
-function openAddModal() {
-    currentEditId = null;
-    document.getElementById('modalTitle').textContent = 'Add Product';
-    document.getElementById('productForm').reset();
-    document.getElementById('productId').value = '';
-    document.getElementById('imagePreview').style.display = 'none';
-    document.getElementById('productImage').value = '';
-    openModal('productModal');
-}
-
-function openEditModal(id) {
-    getProductsFromSupabase().then(products => {
-        const product = products.find(p => p.id === id);
-        if (!product) return;
-
-        currentEditId = id;
-        document.getElementById('modalTitle').textContent = 'Edit Product';
-        document.getElementById('productId').value = product.id;
-        document.getElementById('productName').value = product.name;
-        document.getElementById('productCategory').value = product.category;
-        document.getElementById('productDescription').value = product.description;
-        document.getElementById('productBadge').value = product.badge || '';
-        document.getElementById('productPrice').value = product.price || '';
-
-        // Handle image
-        if (product.image) {
-            if (product.image.startsWith('data:') || product.image.startsWith('http')) {
-                document.getElementById('productImageUrl').value = product.image.startsWith('http') ? product.image : '';
-                const preview = document.getElementById('imagePreview');
-                preview.querySelector('img').src = product.image;
-                preview.style.display = 'block';
-            }
-        }
-
-        openModal('productModal');
-    });
-}
-
-function openDeleteModal(id) {
-    getProductsFromSupabase().then(products => {
-        const product = products.find(p => p.id === id);
-        if (!product) return;
-
-        currentDeleteId = id;
-        document.getElementById('deleteProductName').textContent = product.name;
-        openModal('deleteModal');
-    });
-}
-
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('active');
-    }
+    if (modal) modal.classList.add('active');
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('active');
-    }
+    if (modal) modal.classList.remove('active');
 }
 
 function closeAllModals() {
-    document.querySelectorAll('.admin-modal').forEach(modal => {
-        modal.classList.remove('active');
+    document.querySelectorAll('.admin-modal').forEach(m => m.classList.remove('active'));
+}
+
+function openAddModal() {
+    currentEditId = null;
+    const title = document.getElementById('modalTitle');
+    if (title) title.innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add Product';
+    
+    const form = document.getElementById('productForm');
+    if (form) form.reset();
+
+    document.getElementById('productId').value = '';
+    
+    const preview = document.getElementById('imagePreview');
+    const uploadContent = document.getElementById('uploadContent');
+    if (preview) preview.style.display = 'none';
+    if (uploadContent) uploadContent.style.display = 'block';
+
+    const saveBtn = document.getElementById('saveProductBtn');
+    if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Save Product';
+
+    openModal('productModal');
+}
+
+function openEditModal(id) {
+    const product = getProductById(id);
+    if (!product) return;
+
+    currentEditId = id;
+    const title = document.getElementById('modalTitle');
+    if (title) title.innerHTML = '<i class="fa-solid fa-edit"></i> Edit Product';
+
+    document.getElementById('productId').value = product.id;
+    document.getElementById('productName').value = product.name || '';
+    document.getElementById('productCategory').value = product.category || '';
+    document.getElementById('productDescription').value = product.description || '';
+    document.getElementById('productBadge').value = product.badge || '';
+    document.getElementById('productPrice').value = product.price || '';
+
+    // Handle image preview
+    const preview = document.getElementById('imagePreview');
+    const uploadContent = document.getElementById('uploadContent');
+    const previewImg = document.getElementById('previewImg');
+    const imageUrlInput = document.getElementById('productImageUrl');
+
+    if (product.image) {
+        if (previewImg) previewImg.src = product.image;
+        if (preview) preview.style.display = 'block';
+        if (uploadContent) uploadContent.style.display = 'none';
+        
+        if (product.image.startsWith('http') && imageUrlInput) {
+            imageUrlInput.value = product.image;
+        }
+    } else {
+        if (preview) preview.style.display = 'none';
+        if (uploadContent) uploadContent.style.display = 'block';
+    }
+
+    const saveBtn = document.getElementById('saveProductBtn');
+    if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Update Product';
+
+    openModal('productModal');
+}
+
+function openDeleteModal(id) {
+    const product = getProductById(id);
+    if (!product) return;
+
+    currentDeleteId = id;
+    const nameEl = document.getElementById('deleteProductName');
+    if (nameEl) nameEl.textContent = product.name;
+
+    openModal('deleteModal');
+}
+
+// ============================================================
+//  PRODUCT RENDERING
+// ============================================================
+
+function renderProducts(searchTerm = '', categoryFilter = 'all') {
+    const grid = document.getElementById('productsGrid');
+    const emptyState = document.getElementById('emptyState');
+    if (!grid) return;
+
+    let products = getProducts();
+
+    // Apply category filter
+    if (categoryFilter && categoryFilter !== 'all') {
+        products = products.filter(p => p.category === categoryFilter);
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        products = products.filter(p =>
+            p.name.toLowerCase().includes(term) ||
+            p.description.toLowerCase().includes(term) ||
+            (p.badge && p.badge.toLowerCase().includes(term))
+        );
+    }
+
+    if (products.length === 0) {
+        grid.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+
+    grid.innerHTML = products.map(product => `
+        <div class="product-admin-card" data-id="${product.id}">
+            <div class="product-image-wrapper" onclick="viewImage('${escapeHtml(product.image || '')}')">
+                <img src="${product.image || '../images/placeholder.png'}" 
+                     alt="${escapeHtml(product.name)}" 
+                     loading="lazy"
+                     onerror="this.src='https://via.placeholder.com/400x300/F2EBE0/8B4513?text=No+Image'">
+                ${product.badge ? `<span class="product-badge">${escapeHtml(product.badge)}</span>` : ''}
+            </div>
+            <div class="product-admin-info">
+                <h4>${escapeHtml(product.name)}</h4>
+                <p class="product-category">${getCategoryName(product.category)}</p>
+                ${product.price ? `<p class="product-price-tag">${escapeHtml(product.price)}</p>` : ''}
+                <p class="product-desc">${escapeHtml(product.description)}</p>
+            </div>
+            <div class="product-admin-actions">
+                <button class="btn-icon edit-btn" title="Edit Product" data-id="${product.id}">
+                    <i class="fa-solid fa-edit"></i>
+                </button>
+                <button class="btn-icon delete-btn" title="Delete Product" data-id="${product.id}">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    // Attach event listeners
+    grid.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditModal(btn.dataset.id);
+        });
+    });
+
+    grid.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDeleteModal(btn.dataset.id);
+        });
     });
 }
 
-// ============== FORM HANDLING ==============
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ============================================================
+//  IMAGE VIEWER
+// ============================================================
+
+function viewImage(imageSrc) {
+    if (!imageSrc) return;
+    const modal = document.getElementById('imageViewerModal');
+    const img = document.getElementById('imageViewerImg');
+    if (modal && img) {
+        img.src = imageSrc;
+        modal.classList.add('active');
+    }
+}
+
+// ============================================================
+//  FORM HANDLING
+// ============================================================
 
 async function handleProductSubmit(e) {
     e.preventDefault();
@@ -424,16 +492,40 @@ async function handleProductSubmit(e) {
     const imageUrl = document.getElementById('productImageUrl').value.trim();
     const imageFile = document.getElementById('productImage').files[0];
 
+    if (!name || !category || !description) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Determine image source
     let image = imageUrl;
 
-    // If file uploaded, convert to base64
     if (imageFile) {
         try {
+            const saveBtn = document.getElementById('saveProductBtn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            }
             image = await handleImageUpload(imageFile);
+            if (saveBtn) {
+                saveBtn.disabled = false;
+            }
         } catch (error) {
+            const saveBtn = document.getElementById('saveProductBtn');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Save Product';
+            }
             showToast(error, 'error');
             return;
         }
+    }
+
+    // If editing and no new image, keep existing
+    if (currentEditId && !image) {
+        const existing = getProductById(currentEditId);
+        if (existing) image = existing.image;
     }
 
     const productData = {
@@ -442,122 +534,129 @@ async function handleProductSubmit(e) {
         description,
         badge,
         price,
-        image: image || '../images/placeholder.png'
+        image: image || ''
     };
 
     if (currentEditId) {
-        await updateProductInSupabase(currentEditId, productData);
-        showToast('Product updated successfully');
+        updateProduct(currentEditId, productData);
+        showToast('Product updated successfully!');
     } else {
-        await addProductToSupabase(productData);
-        showToast('Product added successfully');
+        addProduct(productData);
+        showToast('Product added successfully!');
     }
 
     closeAllModals();
-    renderProducts();
+    renderProducts(
+        document.getElementById('searchProducts')?.value || '',
+        document.getElementById('categoryFilter')?.value || 'all'
+    );
+    updateDashboard();
 }
 
-// ============== TOAST NOTIFICATIONS ==============
+// ============================================================
+//  DASHBOARD
+// ============================================================
 
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
+function updateDashboard() {
+    const products = getProducts();
 
-    toast.className = 'toast ' + type;
-    toast.querySelector('i').className = type === 'success'
-        ? 'fa-solid fa-check-circle'
-        : 'fa-solid fa-exclamation-circle';
-    toastMessage.textContent = message;
-
-    toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-// ============== SECTION NAVIGATION ==============
-
-function showSection(sectionName) {
-    // Hide all sections
-    document.querySelectorAll('.admin-section').forEach(section => {
-        section.classList.remove('active');
-    });
-
-    // Show selected section
-    const targetSection = document.getElementById(sectionName + 'Section');
-    if (targetSection) {
-        targetSection.classList.add('active');
-    }
-
-    // Update nav
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector(`[data-section="${sectionName}"]`)?.classList.add('active');
-
-    // Update title
-    const titles = {
-        'dashboard': 'Dashboard',
-        'products': 'Products',
-        'categories': 'Categories',
-        'orders': 'Orders',
-        'customers': 'Customers',
-        'settings': 'Settings'
+    // Update stats
+    const setCount = (id, count) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = count;
     };
-    document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
-}
 
-// ============== AUTHENTICATION ==============
+    setCount('totalProducts', products.length);
+    setCount('totalThangkas', products.filter(p => p.category === 'thangkas').length);
+    setCount('totalBowls', products.filter(p => p.category === 'bowls').length);
+    setCount('totalAntiques', products.filter(p => p.category === 'antiques' || p.category === 'paintings').length);
 
-function checkAuth() {
-    // Check if user is logged in via localStorage
-    const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
-    
-    if (!isLoggedIn) {
-        // Redirect to login page
-        window.location.href = 'index.html';
-        return false;
+    // Update nav badge
+    setCount('navProductCount', products.length);
+
+    // Update category counts
+    const setCatCount = (id, category) => {
+        const el = document.getElementById(id);
+        const count = products.filter(p => p.category === category).length;
+        if (el) el.textContent = count + (count === 1 ? ' item' : ' items');
+    };
+
+    setCatCount('catThangkaCount', 'thangkas');
+    setCatCount('catBowlCount', 'bowls');
+    setCatCount('catAntiqueCount', 'antiques');
+    setCatCount('catPaintingCount', 'paintings');
+
+    // Recent products (last 5)
+    const recentList = document.getElementById('recentProductsList');
+    if (recentList) {
+        const recent = products.slice(0, 5);
+        if (recent.length === 0) {
+            recentList.innerHTML = `
+                <div class="empty-state-mini">
+                    <p>No products yet. Click "Add Product" to get started!</p>
+                </div>
+            `;
+        } else {
+            recentList.innerHTML = recent.map(p => `
+                <div class="recent-product-item">
+                    <div class="recent-product-thumb">
+                        <img src="${p.image || 'https://via.placeholder.com/48x48/F2EBE0/8B4513?text=?'}" 
+                             alt="${escapeHtml(p.name)}"
+                             onerror="this.src='https://via.placeholder.com/48x48/F2EBE0/8B4513?text=?'">
+                    </div>
+                    <div class="recent-product-info">
+                        <h4>${escapeHtml(p.name)}</h4>
+                        <span>${getCategoryName(p.category)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
     }
-    return true;
 }
+
+// ============================================================
+//  AUTHENTICATION
+// ============================================================
 
 function initLogin() {
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
-    
-    // Clear any stuck login state on login page load
-    localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
-    
+
+    // Password toggle
+    const toggleBtn = document.querySelector('.toggle-password');
+    const passwordInput = document.getElementById('password');
+    if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            toggleBtn.querySelector('i').className = type === 'password'
+                ? 'fa-solid fa-eye'
+                : 'fa-solid fa-eye-slash';
+        });
+    }
+
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            
-            try {
-                const username = document.getElementById('username')?.value.trim();
-                const password = document.getElementById('password')?.value.trim();
-                
-                // Validate credentials
-                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                    // Set login state
-                    localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
-                    
-                    // Redirect to admin dashboard
-                    window.location.href = 'admin.html';
-                } else {
-                    // Show error
-                    if (loginError) {
-                        loginError.textContent = 'Invalid username or password';
-                        loginError.style.display = 'block';
-                    }
-                    // Clear login state on failed attempt
-                    localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
-                }
-            } catch (err) {
-                console.error('Login error:', err);
+
+            const username = document.getElementById('username')?.value.trim();
+            const password = document.getElementById('password')?.value.trim();
+
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
+                window.location.href = 'admin.html';
+            } else {
                 if (loginError) {
-                    loginError.textContent = 'An error occurred. Please try again.';
-                    loginError.style.display = 'block';
+                    loginError.style.display = 'flex';
+                    loginError.querySelector('span').textContent = 'Invalid username or password';
+                }
+                // Shake the login card
+                const card = document.querySelector('.login-card');
+                if (card) {
+                    card.style.animation = 'none';
+                    requestAnimationFrame(() => {
+                        card.style.animation = 'shake 0.5s ease';
+                    });
                 }
             }
         });
@@ -565,116 +664,167 @@ function initLogin() {
 }
 
 function logout() {
-    // Clear login state
     localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
-    
-    // Redirect to login page
     window.location.href = 'index.html';
 }
 
-// ============== INITIALIZATION ==============
+// ============================================================
+//  DASHBOARD INITIALIZATION
+// ============================================================
 
 function initDashboard() {
-    console.log('Initializing dashboard...');
-    
-    const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
-    if (!isLoggedIn) {
-        window.location.href = 'index.html';
-        return;
-    }
-    
-    console.log('Dashboard initialized successfully');
+    console.log('Initializing admin dashboard...');
 
     // Initialize products if empty
     if (!localStorage.getItem(STORAGE_KEYS.products)) {
         saveProducts(SAMPLE_PRODUCTS);
     }
 
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-
-    // Navigation
+    // --- Navigation ---
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            const section = item.dataset.section;
-            showSection(section);
+            showSection(item.dataset.section);
         });
     });
 
-    // View all links in dashboard
     document.querySelectorAll('.view-all').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const section = link.dataset.section;
-            showSection(section);
+            if (section) showSection(section);
         });
     });
 
-    // Add product button
-    const addProductBtn = document.getElementById('addProductBtn');
-    if (addProductBtn) {
-        addProductBtn.addEventListener('click', openAddModal);
-    }
+    // --- Category cards → filter products ---
+    document.querySelectorAll('.category-card-large').forEach(card => {
+        card.addEventListener('click', () => {
+            const filter = card.dataset.filter;
+            const filterSelect = document.getElementById('categoryFilter');
+            if (filterSelect) filterSelect.value = filter;
+            showSection('products');
+            renderProducts('', filter);
+        });
+    });
 
-    // Search
-    const searchProducts = document.getElementById('searchProducts');
-    if (searchProducts) {
-        searchProducts.addEventListener('input', (e) => {
-            renderProducts(e.target.value);
+    // --- Logout ---
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+    // --- Add Product ---
+    const addProductBtn = document.getElementById('addProductBtn');
+    if (addProductBtn) addProductBtn.addEventListener('click', openAddModal);
+
+    document.querySelector('.add-first-product')?.addEventListener('click', openAddModal);
+    document.getElementById('quickAddProduct')?.addEventListener('click', () => {
+        showSection('products');
+        setTimeout(openAddModal, 200);
+    });
+
+    // --- Search ---
+    const searchInput = document.getElementById('searchProducts');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const filter = document.getElementById('categoryFilter')?.value || 'all';
+            renderProducts(searchInput.value, filter);
         });
     }
 
-    // Product form
+    // --- Category Filter ---
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', () => {
+            const search = document.getElementById('searchProducts')?.value || '';
+            renderProducts(search, categoryFilter.value);
+        });
+    }
+
+    // --- Product Form ---
     const productForm = document.getElementById('productForm');
     if (productForm) {
         productForm.addEventListener('submit', handleProductSubmit);
     }
 
-    // Delete confirmation
+    // --- Delete Confirmation ---
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
     if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', async () => {
+        confirmDeleteBtn.addEventListener('click', () => {
             if (currentDeleteId) {
-                await deleteProductFromSupabase(currentDeleteId);
-                showToast('Product deleted successfully');
+                deleteProduct(currentDeleteId);
+                showToast('Product deleted successfully!');
                 closeAllModals();
-                renderProducts();
+                renderProducts(
+                    document.getElementById('searchProducts')?.value || '',
+                    document.getElementById('categoryFilter')?.value || 'all'
+                );
+                updateDashboard();
                 currentDeleteId = null;
             }
         });
     }
 
-    // Modal close buttons
+    // --- Modal Close ---
     document.querySelectorAll('.close-modal, .close-modal-btn').forEach(btn => {
         btn.addEventListener('click', closeAllModals);
     });
 
-    // Close modal on outside click
     document.querySelectorAll('.admin-modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeAllModals();
-            }
+            if (e.target === modal) closeAllModals();
         });
     });
 
-    // Image upload preview
+    // --- Image Viewer ---
+    document.getElementById('closeImageViewer')?.addEventListener('click', () => {
+        closeModal('imageViewerModal');
+    });
+
+    // --- Image Upload Preview ---
     const imageInput = document.getElementById('productImage');
     const imageUrlInput = document.getElementById('productImageUrl');
     const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const uploadContent = document.getElementById('uploadContent');
+    const dropZone = document.getElementById('imageDropZone');
 
     if (imageInput) {
         imageInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (file && preview) {
+            if (file) {
                 try {
                     const base64 = await handleImageUpload(file);
-                    preview.querySelector('img').src = base64;
-                    preview.style.display = 'block';
+                    if (previewImg) previewImg.src = base64;
+                    if (preview) preview.style.display = 'block';
+                    if (uploadContent) uploadContent.style.display = 'none';
+                    if (imageUrlInput) imageUrlInput.value = '';
+                } catch (error) {
+                    showToast(error, 'error');
+                }
+            }
+        });
+    }
+
+    // Drag and drop
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                try {
+                    const base64 = await handleImageUpload(file);
+                    if (previewImg) previewImg.src = base64;
+                    if (preview) preview.style.display = 'block';
+                    if (uploadContent) uploadContent.style.display = 'none';
                     if (imageUrlInput) imageUrlInput.value = '';
                 } catch (error) {
                     showToast(error, 'error');
@@ -684,27 +834,30 @@ function initDashboard() {
     }
 
     // Remove image
-    const removeImageBtn = document.querySelector('.remove-image');
-    if (removeImageBtn) {
-        removeImageBtn.addEventListener('click', () => {
-            if (imageInput) imageInput.value = '';
-            if (imageUrlInput) imageUrlInput.value = '';
-            if (preview) preview.style.display = 'none';
-        });
-    }
+    document.getElementById('removeImageBtn')?.addEventListener('click', () => {
+        if (imageInput) imageInput.value = '';
+        if (imageUrlInput) imageUrlInput.value = '';
+        if (preview) preview.style.display = 'none';
+        if (uploadContent) uploadContent.style.display = 'block';
+    });
 
     // Image URL input
     if (imageUrlInput) {
-        imageUrlInput.addEventListener('input', (e) => {
-            if (e.target.value && preview) {
-                preview.querySelector('img').src = e.target.value;
-                preview.style.display = 'block';
+        imageUrlInput.addEventListener('input', () => {
+            const url = imageUrlInput.value.trim();
+            if (url) {
+                if (previewImg) previewImg.src = url;
+                if (preview) preview.style.display = 'block';
+                if (uploadContent) uploadContent.style.display = 'none';
                 if (imageInput) imageInput.value = '';
+            } else {
+                if (preview) preview.style.display = 'none';
+                if (uploadContent) uploadContent.style.display = 'block';
             }
         });
     }
 
-    // Settings form
+    // --- Settings Form ---
     const settingsForm = document.getElementById('settingsForm');
     if (settingsForm) {
         settingsForm.addEventListener('submit', (e) => {
@@ -717,32 +870,27 @@ function initDashboard() {
                 address: document.getElementById('shopAddress')?.value
             };
             localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
-            showToast('Settings saved successfully');
+            showToast('Settings saved successfully!');
         });
     }
 
-    // Load settings
+    // Load saved settings
     const savedSettings = localStorage.getItem(STORAGE_KEYS.settings);
     if (savedSettings) {
         const settings = JSON.parse(savedSettings);
-        const shopName = document.getElementById('shopName');
-        const shopTagline = document.getElementById('shopTagline');
-        const shopPhone = document.getElementById('shopPhone');
-        const shopEmail = document.getElementById('shopEmail');
-        const shopAddress = document.getElementById('shopAddress');
-        
-        if (shopName) shopName.value = settings.name || '';
-        if (shopTagline) shopTagline.value = settings.tagline || '';
-        if (shopPhone) shopPhone.value = settings.phone || '';
-        if (shopEmail) shopEmail.value = settings.email || '';
-        if (shopAddress) shopAddress.value = settings.address || '';
+        const fields = ['shopName', 'shopTagline', 'shopPhone', 'shopEmail', 'shopAddress'];
+        const keys = ['name', 'tagline', 'phone', 'email', 'address'];
+        fields.forEach((fieldId, i) => {
+            const el = document.getElementById(fieldId);
+            if (el && settings[keys[i]]) el.value = settings[keys[i]];
+        });
     }
 
-    // Export data
-    const exportDataBtn = document.getElementById('exportDataBtn');
-    if (exportDataBtn) {
-        exportDataBtn.addEventListener('click', async () => {
-            const products = await getProductsFromSupabase();
+    // --- Export Data ---
+    const exportBtn = document.getElementById('exportDataBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            const products = getProducts();
             const dataStr = JSON.stringify(products, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -751,70 +899,99 @@ function initDashboard() {
             a.download = 'lucky-thangka-products.json';
             a.click();
             URL.revokeObjectURL(url);
-            showToast('Products exported successfully');
+            showToast('Products exported successfully!');
         });
     }
 
-    // Clear all data
+    document.getElementById('quickExport')?.addEventListener('click', () => {
+        exportBtn?.click();
+    });
+
+    // --- Import Data ---
+    const importInput = document.getElementById('importDataInput');
+    if (importInput) {
+        importInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (Array.isArray(imported)) {
+                        const products = getProducts();
+                        const merged = [...products, ...imported.map(p => ({
+                            ...p,
+                            id: p.id || generateId(),
+                            created_at: p.created_at || new Date().toISOString()
+                        }))];
+                        saveProducts(merged);
+                        renderProducts();
+                        updateDashboard();
+                        showToast(`Imported ${imported.length} products!`);
+                    } else {
+                        showToast('Invalid file format', 'error');
+                    }
+                } catch (err) {
+                    showToast('Failed to parse JSON file', 'error');
+                }
+            };
+            reader.readAsText(file);
+            importInput.value = ''; // Reset
+        });
+    }
+
+    // --- Clear All Data ---
     const clearDataBtn = document.getElementById('clearDataBtn');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to delete ALL products? This cannot be undone.')) {
+            if (confirm('⚠️ Are you sure you want to delete ALL products?\n\nThis action cannot be undone!')) {
                 localStorage.removeItem(STORAGE_KEYS.products);
                 renderProducts();
-                showToast('All products cleared');
+                updateDashboard();
+                showToast('All products cleared!', 'warning');
             }
         });
     }
 
-    // Mobile menu toggle
+    // --- Refresh Data ---
+    document.getElementById('quickRefresh')?.addEventListener('click', () => {
+        renderProducts();
+        updateDashboard();
+        showToast('Data refreshed!');
+    });
+
+    // --- Mobile Menu ---
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const adminSidebar = document.getElementById('adminSidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
-    
+
     if (mobileMenuToggle && adminSidebar) {
         mobileMenuToggle.addEventListener('click', () => {
             adminSidebar.classList.toggle('active');
             if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
         });
     }
-    
+
     if (sidebarOverlay && adminSidebar) {
         sidebarOverlay.addEventListener('click', () => {
             adminSidebar.classList.remove('active');
             sidebarOverlay.classList.remove('active');
         });
     }
-    
-    // Close sidebar when clicking nav items on mobile
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (window.innerWidth <= 768 && adminSidebar && sidebarOverlay) {
-                adminSidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            }
-        });
-    });
 
-    // Initial render
+    // --- Initial Render ---
     renderProducts();
-    
-    // Update dashboard stats
-    updateDashboardStats();
+    updateDashboard();
+
+    console.log('Admin dashboard initialized successfully!');
 }
 
-async function updateDashboardStats() {
-    const products = await getProductsFromSupabase();
-    const totalProductsEl = document.getElementById('totalProducts');
-    if (totalProductsEl) {
-        totalProductsEl.textContent = products.length;
-    }
-}
-
-// ============== MAIN INIT ==============
+// ============================================================
+//  MAIN INIT
+// ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check which page we're on
     if (document.querySelector('.admin-login-body')) {
         initLogin();
     } else if (document.querySelector('.admin-body')) {
@@ -822,14 +999,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ============== PUBLIC API ==============
+// ============================================================
+//  PUBLIC API (for main site access)
+// ============================================================
 
 window.AdminAPI = {
-    getProducts: getProductsFromSupabase,
-    addProduct: addProductToSupabase,
-    updateProduct: updateProductInSupabase,
-    deleteProduct: deleteProductFromSupabase,
-    getSettings: function() {
+    getProducts,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    getSettings: function () {
         const saved = localStorage.getItem(STORAGE_KEYS.settings);
         return saved ? JSON.parse(saved) : null;
     }

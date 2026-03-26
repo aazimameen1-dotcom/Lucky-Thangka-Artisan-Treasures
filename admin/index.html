@@ -3,47 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | Lucky Thangka</title>
+    <title>Admin Login | Lucky Thangka & Artisan Treasures</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
 </head>
 <body class="admin-login-body">
+    <!-- Animated Background Elements -->
+    <div class="login-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <i class="fa-solid fa-dharmachakra"></i>
+                <div class="login-icon-ring">
+                    <i class="fa-solid fa-dharmachakra"></i>
+                </div>
                 <h1>Lucky Thangka</h1>
-                <p>Admin Panel</p>
+                <p>Admin Dashboard</p>
             </div>
             <form id="loginForm" class="login-form">
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" required placeholder="Enter username">
+                    <label for="username">
+                        <i class="fa-solid fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" required placeholder="Enter your username" autocomplete="username">
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter password">
+                    <label for="password">
+                        <i class="fa-solid fa-lock"></i> Password
+                    </label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">
-                    <i class="fa-solid fa-sign-in-alt"></i> Login
+                <button type="submit" class="btn btn-primary btn-full btn-login">
+                    <i class="fa-solid fa-sign-in-alt"></i> Sign In
                 </button>
-                <p class="login-hint">Default: admin / admin123</p>
-                <div style="margin-top: 15px; text-align: center; padding: 10px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
-                    <i class="fa-solid fa-info-circle" style="color: #856404;"></i>
-                    <span style="color: #856404; font-size: 0.85rem;">
-                        Must login first before accessing dashboard
-                    </span>
+                <div class="login-hint">
+                    <i class="fa-solid fa-info-circle"></i>
+                    Default credentials: <strong>admin</strong> / <strong>admin123</strong>
                 </div>
                 <div id="loginError" class="login-error" style="display: none;">
-                    <i class="fa-solid fa-exclamation-circle"></i> Invalid credentials
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                    <span>Invalid username or password</span>
                 </div>
             </form>
         </div>
+        <p class="login-footer-text">
+            <a href="../index.html"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
+        </p>
     </div>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
     <script src="admin.js"></script>
 </body>
 </html>
