@@ -31,10 +31,15 @@
                     <i class="fa-solid fa-sign-in-alt"></i> Login
                 </button>
                 <p class="login-hint">Default: admin / admin123</p>
+                <div style="margin-top: 15px; text-align: center;">
+                    <a href="dashboard.html" style="color: var(--primary); font-size: 0.85rem; text-decoration: underline;">
+                        <i class="fa-solid fa-arrow-right"></i> Go to Dashboard (if already logged in)
+                    </a>
+                </div>
+                <div id="loginError" class="login-error" style="display: none;">
+                    <i class="fa-solid fa-exclamation-circle"></i> Invalid credentials
+                </div>
             </form>
-            <div id="loginError" class="login-error" style="display: none;">
-                <i class="fa-solid fa-exclamation-circle"></i> Invalid credentials
-            </div>
         </div>
     </div>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
