@@ -525,21 +525,32 @@ function initLogin() {
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            
-            // Validate credentials
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                // Set login state
-                localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
+            try {
+                const username = document.getElementById('username')?.value.trim();
+                const password = document.getElementById('password')?.value.trim();
                 
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                // Show error
+                // Validate credentials
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    // Set login state
+                    localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
+                    
+                    // Redirect to dashboard with absolute path
+                    const currentPath = window.location.pathname;
+                    const adminPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                    window.location.href = adminPath + 'dashboard.html';
+                } else {
+                    // Show error
+                    if (loginError) {
+                        loginError.textContent = 'Invalid username or password';
+                        loginError.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.error('Login error:', err);
                 if (loginError) {
-                    loginError.textContent = 'Invalid username or password';
+                    loginError.textContent = 'An error occurred. Please try again.';
                     loginError.style.display = 'block';
                 }
             }
