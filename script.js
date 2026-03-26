@@ -304,9 +304,11 @@ window.ProductAPI = {
 const SUPABASE_URL = 'https://cqqrgodgzcyuiarfajhm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcXJnb2RnemN5dWlhcmZhamhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjA4MDUsImV4cCI6MjA5MDA5NjgwNX0.oYRHrJpOpRPnmJs6FcFzxTsBJTWN9bFyAs24Fj9Q9GE';
 
-let supabase = null;
+let supabaseClient = null;
 try {
-    supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    if (typeof window !== 'undefined' && window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
 } catch (e) {
     console.warn('Supabase not available, using localStorage fallback');
 }
@@ -347,9 +349,9 @@ const DEFAULT_REVIEWS = [
 
 async function getReviews() {
     // Try Supabase first
-    if (supabase) {
+    if (supabaseClient) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('reviews')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -372,9 +374,9 @@ async function getReviews() {
 
 async function saveReview(reviewData) {
     // Save to Supabase
-    if (supabase) {
+    if (supabaseClient) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('reviews')
                 .insert([{
                     name: reviewData.name,
