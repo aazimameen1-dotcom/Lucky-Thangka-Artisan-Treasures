@@ -504,6 +504,57 @@ function showSection(sectionName) {
     document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
 }
 
+// ============== AUTHENTICATION ==============
+
+function checkAuth() {
+    // Check if user is logged in via localStorage
+    const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
+    
+    if (!isLoggedIn) {
+        // Redirect to login page
+        window.location.href = 'index.html';
+        return false;
+    }
+    return true;
+}
+
+function initLogin() {
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            // Validate credentials
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Set login state
+                localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
+                
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // Show error
+                if (loginError) {
+                    loginError.textContent = 'Invalid username or password';
+                    loginError.style.display = 'block';
+                }
+            }
+        });
+    }
+}
+
+function logout() {
+    // Clear login state
+    localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
+    
+    // Redirect to login page
+    window.location.href = 'index.html';
+}
+
 // ============== INITIALIZATION ==============
 
 function initDashboard() {
