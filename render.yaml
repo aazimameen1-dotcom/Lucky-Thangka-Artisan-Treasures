@@ -1,0 +1,10 @@
+services:
+  - type: static
+    name: lucky-thangka-store
+    runtime: static
+    buildCommand: echo "No build needed for static site"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /admin/*
+        destination: /admin/index.html
