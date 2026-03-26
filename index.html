@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Thangka & Artisan Treasures | Sacred Art & Sound</title>
+    <meta name="description" content="Discover authentic Lucky Thangkas, Himalayan Singing Bowls, and Antique Treasures from Srinagar, J&K. Hand-painted, blessed, and perfect for spiritual merit.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sticky Navigation -->
+    <nav class="navbar glass-nav">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-dharmachakra"></i> Lucky Thangka
+            </a>
+            <div class="nav-links">
+                <a href="#thangkas">Lucky Thangkas</a>
+                <a href="#bowls">Singing Bowls</a>
+                <a href="#antiques">Antiques</a>
+                <a href="#contact" class="btn btn-outline nav-btn">Inquire Now</a>
+            </div>
+            <button class="menu-toggle" aria-label="Toggle Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu glass-panel">
+        <button class="close-menu" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
+        <div class="mobile-nav-links">
+            <a href="#thangkas" class="mobile-link">Lucky Thangkas</a>
+            <a href="#bowls" class="mobile-link">Singing Bowls</a>
+            <a href="#antiques" class="mobile-link">Antiques & Art</a>
+            <a href="#contact" class="mobile-link">Contact</a>
+        </div>
+    </div>
+
+    <!-- Hero Banner -->
+    <header class="hero" id="home">
+        <div class="hero-bg" style="background-image: url('images/hero.png');"></div>
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <span class="sub-heading transform-up">Srinagar, Jammu & Kashmir</span>
+            <h1 class="main-heading transform-up delay-1">Sacred Art. Sacred Sound.<br><span class="gold-text">Timeless Treasures.</span></h1>
+            <p class="hero-desc transform-up delay-2">Discover hand-painted blessed Thangkas, authentic Himalayan singing bowls, and rare antique treasures to bring protection, prosperity, and spiritual merit to your space.</p>
+            <div class="hero-actions transform-up delay-3">
+                <a href="#thangkas" class="btn btn-primary">Explore Collections</a>
+                <a href="#contact" class="btn btn-glass">Contact Us</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <p>Scroll to explore</p>
+            <i class="fa-solid fa-chevron-down hidden-arrow"></i>
+        </div>
+    </header>
+
+    <!-- Authenticity Section -->
+    <section class="authenticity-section">
+        <div class="container">
+            <div class="auth-grid">
+                <div class="auth-item">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-hands-praying"></i>
+                    </div>
+                    <h3>Blessed by Monks</h3>
+                    <p>Each Thangka is formally blessed by a Buddhist monk, ensuring its spiritual integrity.</p>
+                </div>
+                <div class="auth-item">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-certificate"></i>
+                    </div>
+                    <h3>Authenticity Certified</h3>
+                    <p>Every premium piece comes with a written Certificate of Authenticity.</p>
+                </div>
+                <div class="auth-item">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-paint-brush"></i>
+                    </div>
+                    <h3>Master Artisans</h3>
+                    <p>Hand-painted and handcrafted using techniques sustained for centuries.</p>
+                </div>
+            </div>
+            <div class="auspicious-divider">
+                <span>&#2384;</span> <!-- Om Symbol -->
+                <div class="line"></div>
+                <i class="fa-solid fa-fan"></i> <!-- Endless knot proxy -->
+                <div class="line"></div>
+                <i class="fa-solid fa-spa"></i> <!-- Lotus proxy -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Lucky Thangkas Collection -->
+    <section id="thangkas" class="collection-section bg-sand">
+        <div class="container">
+            <div class="section-title text-center">
+                <span class="eyebrow">Sacred Scrolls</span>
+                <h2>Featured Lucky Thangkas</h2>
+                <p>Believed to bring protection, prosperity, and spiritual merit.</p>
+            </div>
+            
+            <div class="product-grid" id="thangkasGrid">
+                <!-- Products loaded dynamically from admin -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Singing Bowls Collection -->
+    <section id="bowls" class="collection-section">
+        <div class="container alignment-wrapper align-items-center mb-5">
+            <div class="half-col image-col">
+                <img src="images/bowl.png" alt="Himalayan Singing Bowl" class="featured-img rounded-lg shadow-deep pop-in">
+            </div>
+            <div class="half-col text-col p-4">
+                <span class="eyebrow">Healing Frequencies</span>
+                <h2>Meditation Singing Bowls</h2>
+                <p>Authentic Himalayan singing bowls crafted from traditional alloys. Available in various sizes and chakra alignments (Root, Sacral, Solar Plexus, Heart, Throat, Third Eye, Crown) to restore vibratory frequencies of the body, mind, and soul.</p>
+                <br>
+                <div class="perks-list">
+                    <p><i class="fa-solid fa-om gold-text"></i> Seven-metal alloy construction</p>
+                    <p><i class="fa-solid fa-om gold-text"></i> Precise chakra-aligned sound tuning</p>
+                    <p><i class="fa-solid fa-om gold-text"></i> Available as complete sets or individual pieces</p>
+                </div>
+                <button class="btn btn-primary mt-4 inquire-btn" data-product="Singing Bowls Collection">Request Catalog & Pricing</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Antiques & Original Paintings -->
+    <section id="antiques" class="collection-section bg-maroon text-light">
+        <div class="container">
+            <div class="section-title text-center text-light">
+                <span class="eyebrow text-gold">Rare Discoveries</span>
+                <h2 class="text-light">Antiques & Original Artwork</h2>
+                <p class="text-light-muted">Curated vintage artifacts and exceptional regional paintings.</p>
+            </div>
+
+            <div class="product-grid" id="antiquesGrid">
+                <!-- Antiques and paintings loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section bg-sand">
+        <div class="container">
+            <div class="section-title text-center">
+                <h2>Words from Our Patrons</h2>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="review-text">"The vibration of my Heart Chakra singing bowl is profoundly deep. You can feel the authenticity, and their service was exceptional."</p>
+                    <div class="reviewer">- Sarah M., USA</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="review-text">"My White Tara Thangka arrived with its certificate of authenticity. The painting is mesmerizing and brings such a peaceful energy to our home."</p>
+                    <div class="reviewer">- Ananya R., India</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="review-text">"Found an incredible vintage brass statue here. The packaging was extremely secure, a trustworthy destination for high-value antiques."</p>
+                    <div class="reviewer">- David L., UK</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact & Location -->
+    <section id="contact" class="contact-section">
+        <div class="container contact-container">
+            <div class="contact-info">
+                <span class="eyebrow">Visit Us</span>
+                <h2>Get in Touch</h2>
+                <p>Because of the unique and high-value nature of our sacred arts, all purchases are handled with personalized care. Inquire below to proceed.</p>
+                
+                <div class="contact-details">
+                    <div class="detail-item">
+                        <div class="icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <h4>Our Boutique</h4>
+                            <p>Srinagar, Jammu & Kashmir, India</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="icon"><i class="fa-solid fa-phone"></i></div>
+                        <div>
+                            <h4>Direct Line</h4>
+                            <p>+91 99066 12345</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="icon"><i class="fa-solid fa-envelope"></i></div>
+                        <div>
+                            <h4>Email Us</h4>
+                            <p>lucky@artisantreasures.in</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Map Placeholder visual -->
+                <div class="map-container">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d105615.15833291264!2d74.73356!3d34.083656!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38e18f98fdc4dc33%3A0xc3b5ed7f9b889364!2sSrinagar%2C%20Jammu%20and%20Kashmir!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+
+            <div class="contact-form-wrapper">
+                <form class="contact-form" id="inquiryForm">
+                    <h3>Inquiry Form</h3>
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required placeholder="Jane Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required placeholder="jane@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number (with country code)</label>
+                        <input type="tel" id="phone" placeholder="+1 234 567 8900">
+                    </div>
+                    <div class="form-group">
+                        <label for="product">Interested Product</label>
+                        <input type="text" id="product" placeholder="e.g., Green Tara Thangka">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea id="message" rows="4" required placeholder="Please provide any specific requirements or questions..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Send Inquiry</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer bg-maroon text-light">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <a href="#" class="logo text-light">
+                    <i class="fa-solid fa-dharmachakra"></i> Lucky Thangka
+                </a>
+                <p>Sacred Art. Sacred Sound. Timeless Treasures.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Collections</h4>
+                <a href="#thangkas">Lucky Thangkas</a>
+                <a href="#bowls">Singing Bowls</a>
+                <a href="#antiques">Antique Treasures</a>
+                <a href="#antiques">Original Paintings</a>
+            </div>
+            <div class="footer-links">
+                <h4>Information</h4>
+                <a href="#">Authenticity Guarantee</a>
+                <a href="#">Shipping & Returns</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+        <div class="footer-bottom text-center">
+            <p>&copy; 2026 Lucky Thangka & Artisan Treasures. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Fixed WhatsApp Button -->
+    <a href="https://wa.me/919906612345" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <!-- Inquiry Modal -->
+    <div id="inquiryModal" class="modal">
+        <div class="modal-content glass-effect">
+            <span class="close-modal">&times;</span>
+            <div class="form-success text-center">
+                <i class="fa-solid fa-paper-plane gold-text" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3 class="text-light">Inquiry Sent Successfully</h3>
+                <p class="text-light-muted">Thank you for your interest. We will contact you shortly regarding pricing and availability.</p>
+                <button class="btn btn-primary mt-3 close-modal-btn">Continue Exploring</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
