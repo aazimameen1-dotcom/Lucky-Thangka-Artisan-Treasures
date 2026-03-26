@@ -797,10 +797,29 @@ function initDashboard() {
 // ============== MAIN INIT ==============
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check which page we're on
-    if (document.querySelector('.admin-login-body')) {
+    // Single-page admin: check if we have login section (new merged page)
+    const loginSection = document.getElementById('loginSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    
+    if (loginSection && dashboardSection) {
+        // New merged single-page structure
+        const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
+        if (isLoggedIn) {
+            // Show dashboard, hide login
+            loginSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            initDashboard();
+        } else {
+            // Show login, hide dashboard
+            loginSection.style.display = 'block';
+            dashboardSection.style.display = 'none';
+            initLogin();
+        }
+    } else if (document.querySelector('.admin-login-body')) {
+        // Legacy login page only
         initLogin();
     } else if (document.querySelector('.admin-body')) {
+        // Legacy dashboard page only
         initDashboard();
     }
 });
