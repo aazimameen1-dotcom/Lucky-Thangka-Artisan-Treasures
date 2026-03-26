@@ -497,8 +497,11 @@ function showSection(sectionName) {
 
     // Update title
     const titles = {
+        'dashboard': 'Dashboard',
         'products': 'Products',
         'categories': 'Categories',
+        'orders': 'Orders',
+        'customers': 'Customers',
         'settings': 'Settings'
     };
     document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
@@ -571,20 +574,11 @@ function logout() {
 function initDashboard() {
     console.log('Initializing dashboard...');
     
-    // TEMPORARILY DISABLED AUTH CHECK FOR DEBUGGING
-    // Uncomment the lines below to re-enable authentication:
-    // const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
-    // if (!isLoggedIn) {
-    //     window.location.href = 'index.html';
-    //     return;
-    // }
-    
-    // Add visible debug message
-    const body = document.body;
-    const debugMsg = document.createElement('div');
-    debugMsg.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#28a745;color:white;padding:10px;z-index:9999;text-align:center;font-weight:bold;';
-    debugMsg.textContent = 'Admin Panel Loaded - Auth temporarily disabled for testing';
-    body.appendChild(debugMsg);
+    const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
+    if (!isLoggedIn) {
+        window.location.href = 'index.html';
+        return;
+    }
     
     console.log('Dashboard initialized successfully');
 
@@ -604,6 +598,15 @@ function initDashboard() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const section = item.dataset.section;
+            showSection(section);
+        });
+    });
+
+    // View all links in dashboard
+    document.querySelectorAll('.view-all').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = link.dataset.section;
             showSection(section);
         });
     });
@@ -792,34 +795,26 @@ function initDashboard() {
 
     // Initial render
     renderProducts();
+    
+    // Update dashboard stats
+    updateDashboardStats();
+}
+
+async function updateDashboardStats() {
+    const products = await getProductsFromSupabase();
+    const totalProductsEl = document.getElementById('totalProducts');
+    if (totalProductsEl) {
+        totalProductsEl.textContent = products.length;
+    }
 }
 
 // ============== MAIN INIT ==============
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Single-page admin: check if we have login section (new merged page)
-    const loginSection = document.getElementById('loginSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    
-    if (loginSection && dashboardSection) {
-        // New merged single-page structure
-        const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
-        if (isLoggedIn) {
-            // Show dashboard, hide login
-            loginSection.style.display = 'none';
-            dashboardSection.style.display = 'block';
-            initDashboard();
-        } else {
-            // Show login, hide dashboard
-            loginSection.style.display = 'block';
-            dashboardSection.style.display = 'none';
-            initLogin();
-        }
-    } else if (document.querySelector('.admin-login-body')) {
-        // Legacy login page only
+    // Check which page we're on
+    if (document.querySelector('.admin-login-body')) {
         initLogin();
     } else if (document.querySelector('.admin-body')) {
-        // Legacy dashboard page only
         initDashboard();
     }
 });

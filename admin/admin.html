@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Lucky Thangka</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="logo">
+            <i class="fa-solid fa-dharmachakra"></i>
+            <span>Lucky Thangka</span>
+        </div>
+        <button class="menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-dharmachakra"></i>
+            <span>Lucky Thangka</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#products" class="nav-item active" data-section="products">
+                <i class="fa-solid fa-box"></i>
+                <span>Products</span>
+            </a>
+            <a href="#categories" class="nav-item" data-section="categories">
+                <i class="fa-solid fa-tags"></i>
+                <span>Categories</span>
+            </a>
+            <a href="#settings" class="nav-item" data-section="settings">
+                <i class="fa-solid fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Header -->
+        <header class="admin-header">
+            <h2 id="pageTitle">Products</h2>
+            <div class="header-actions">
+                <a href="../index.html" target="_blank" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-external-link-alt"></i> View Site
+                </a>
+            </div>
+        </header>
+
+        <!-- Products Section -->
+        <section id="productsSection" class="admin-section active">
+            <div class="section-toolbar">
+                <button id="addProductBtn" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Add Product
+                </button>
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchProducts" placeholder="Search products...">
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsGrid" class="products-admin-grid">
+                <!-- Products will be loaded here dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fa-solid fa-box-open"></i>
+                <p>No products yet. Add your first product!</p>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section id="categoriesSection" class="admin-section">
+            <div class="categories-list">
+                <div class="category-card">
+                    <div class="category-info">
+                        <i class="fa-solid fa-image"></i>
+                        <div>
+                            <h4>Lucky Thangkas</h4>
+                            <p>Sacred Tibetan Buddhist scroll paintings</p>
+                        </div>
+                    </div>
+                    <span class="badge">Featured</span>
+                </div>
+                <div class="category-card">
+                    <div class="category-info">
+                        <i class="fa-solid fa-music"></i>
+                        <div>
+                            <h4>Singing Bowls</h4>
+                            <p>Authentic Himalayan meditation bowls</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-info">
+                        <i class="fa-solid fa-gem"></i>
+                        <div>
+                            <h4>Antique Treasures</h4>
+                            <p>Vintage artifacts and collectibles</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-info">
+                        <i class="fa-solid fa-palette"></i>
+                        <div>
+                            <h4>Original Paintings</h4>
+                            <p>Kashmiri and contemporary art</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settingsSection" class="admin-section">
+            <div class="settings-card">
+                <h3>Shop Information</h3>
+                <form id="settingsForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Shop Name</label>
+                            <input type="text" id="shopName" value="Lucky Thangka & Artisan Treasures">
+                        </div>
+                        <div class="form-group">
+                            <label>Tagline</label>
+                            <input type="text" id="shopTagline" value="Sacred Art. Sacred Sound. Timeless Treasures.">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" id="shopPhone" value="+91 99066 12345">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="shopEmail" value="lucky@artisantreasures.in">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="shopAddress" value="Srinagar, Jammu & Kashmir, India">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+
+            <div class="settings-card">
+                <h3>Data Management</h3>
+                <div class="data-actions">
+                    <button id="exportDataBtn" class="btn btn-outline">
+                        <i class="fa-solid fa-download"></i> Export Products (JSON)
+                    </button>
+                    <button id="clearDataBtn" class="btn btn-danger">
+                        <i class="fa-solid fa-trash"></i> Clear All Products
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="admin-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Product</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productName">Product Name *</label>
+                        <input type="text" id="productName" required placeholder="e.g., Green Tara Thangka">
+                    </div>
+                    <div class="form-group">
+                        <label for="productCategory">Category *</label>
+                        <select id="productCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="thangkas">Lucky Thangkas</option>
+                            <option value="bowls">Singing Bowls</option>
+                            <option value="antiques">Antique Treasures</option>
+                            <option value="paintings">Original Paintings</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Description *</label>
+                    <textarea id="productDescription" rows="3" required placeholder="Describe the product..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productBadge">Badge (optional)</label>
+                        <input type="text" id="productBadge" placeholder="e.g., Prosperity, Healing, Antique">
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Price Range (optional)</label>
+                        <input type="text" id="productPrice" placeholder="e.g., ₹5,000 - ₹15,000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Product Image</label>
+                    <div class="image-upload-area">
+                        <input type="file" id="productImage" accept="image/*">
+                        <div class="upload-placeholder">
+                            <i class="fa-solid fa-cloud-upload-alt"></i>
+                            <p>Click to upload or drag & drop</p>
+                            <small>Supported: JPG, PNG, WEBP</small>
+                        </div>
+                        <div id="imagePreview" class="image-preview" style="display: none;">
+                            <img src="" alt="Preview">
+                            <button type="button" class="remove-image">&times;</button>
+                        </div>
+                    </div>
+                    <p class="form-hint">Or use external URL:</p>
+                    <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-save"></i> Save Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="admin-modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Confirm Delete</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteProductName"></strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-check-circle"></i>
+        <span id="toastMessage">Operation successful</span>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
