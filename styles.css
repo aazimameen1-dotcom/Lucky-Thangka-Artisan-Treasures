@@ -1206,26 +1206,7 @@ img {
     img { image-rendering: -webkit-optimize-contrast; }
 }
 
-/* ============================================================
-   DARK MODE SUPPORT
-   ============================================================ */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --cream: #1a1a1a;
-        --sand: #2d2d2d;
-        --text-main: #e0e0e0;
-        --text-muted: #a0a0a0;
-    }
-    
-    body { background-color: var(--cream); }
-    .product-card { background: #2d2d2d; border-color: #3d3d3d; }
-    .testimonial-card { background: #2d2d2d; }
-    .contact-form-wrapper { background: #2d2d2d; }
-    .auth-grid .icon-wrapper { background: #3d3d3d; }
-    .auth-item { background: #252525; }
-    .glass-nav { background: rgba(26, 26, 26, 0.85); }
-    .mobile-menu { background: rgba(26, 26, 26, 0.95); }
-}
+
 
 /* ============================================================
    REDUCED MOTION PREFERENCE
