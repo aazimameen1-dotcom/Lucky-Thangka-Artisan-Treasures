@@ -121,6 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 6. Contact Form
     setupContactForm();
+
+    // 7. Review System
+    setupReviewSystem();
 });
 
 // ============================================================
@@ -293,3 +296,224 @@ window.ProductAPI = {
     refreshProducts: renderProducts,
     getProducts: getProducts
 };
+
+// ============================================================
+//  REVIEW SYSTEM
+// ============================================================
+
+const REVIEWS_KEY = 'lt_reviews';
+
+const DEFAULT_REVIEWS = [
+    {
+        id: 'r1',
+        name: 'Sarah M.',
+        location: 'USA',
+        rating: 5,
+        text: 'The vibration of my Heart Chakra singing bowl is profoundly deep. You can feel the authenticity, and their service was exceptional.',
+        date: '2026-02-15T10:30:00Z'
+    },
+    {
+        id: 'r2',
+        name: 'Ananya R.',
+        location: 'India',
+        rating: 5,
+        text: 'My White Tara Thangka arrived with its certificate of authenticity. The painting is mesmerizing and brings such a peaceful energy to our home.',
+        date: '2026-03-01T14:20:00Z'
+    },
+    {
+        id: 'r3',
+        name: 'David L.',
+        location: 'UK',
+        rating: 5,
+        text: 'Found an incredible vintage brass statue here. The packaging was extremely secure, a trustworthy destination for high-value antiques.',
+        date: '2026-03-10T09:15:00Z'
+    }
+];
+
+function getReviews() {
+    const stored = localStorage.getItem(REVIEWS_KEY);
+    if (!stored) {
+        localStorage.setItem(REVIEWS_KEY, JSON.stringify(DEFAULT_REVIEWS));
+        return [...DEFAULT_REVIEWS];
+    }
+    return JSON.parse(stored);
+}
+
+function saveReview(review) {
+    const reviews = getReviews();
+    reviews.unshift(review);
+    localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+}
+
+function renderReviews() {
+    const reviews = getReviews();
+    const grid = document.getElementById('reviewsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = reviews.map(r => {
+        const starsHtml = Array.from({length: 5}, (_, i) =>
+            `<i class="fa-solid fa-star" style="color: ${i < r.rating ? 'var(--gold)' : '#ddd'}"></i>`
+        ).join('');
+
+        const dateStr = new Date(r.date).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        return `
+            <div class="testimonial-card">
+                <div class="stars">${starsHtml}</div>
+                <p class="review-text">"${escapeHtml(r.text)}"</p>
+                <div class="reviewer">
+                    - ${escapeHtml(r.name)}${r.location ? `, <span class="reviewer-location">${escapeHtml(r.location)}</span>` : ''}
+                </div>
+                <div class="review-date">${dateStr}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Update summary
+    updateReviewSummary(reviews);
+}
+
+function updateReviewSummary(reviews) {
+    if (reviews.length === 0) return;
+
+    const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    const avgRounded = avg.toFixed(1);
+
+    const avgNumber = document.getElementById('avgNumber');
+    const reviewCount = document.getElementById('reviewCount');
+    const avgStars = document.getElementById('avgStars');
+
+    if (avgNumber) avgNumber.textContent = avgRounded;
+    if (reviewCount) reviewCount.textContent = `· ${reviews.length} review${reviews.length !== 1 ? 's' : ''}`;
+
+    if (avgStars) {
+        const fullStars = Math.floor(avg);
+        const hasHalf = avg - fullStars >= 0.5;
+        let html = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < fullStars) html += '<i class="fa-solid fa-star"></i>';
+            else if (i === fullStars && hasHalf) html += '<i class="fa-solid fa-star-half-stroke"></i>';
+            else html += '<i class="fa-regular fa-star"></i>';
+        }
+        avgStars.innerHTML = html;
+    }
+}
+
+function setupReviewSystem() {
+    // Render existing reviews
+    renderReviews();
+
+    // Toggle review form
+    const toggleBtn = document.getElementById('toggleReviewForm');
+    const formWrapper = document.getElementById('reviewFormWrapper');
+    const cancelBtn = document.getElementById('cancelReview');
+
+    if (toggleBtn && formWrapper) {
+        toggleBtn.addEventListener('click', () => {
+            formWrapper.style.display = formWrapper.style.display === 'none' ? 'block' : 'none';
+            toggleBtn.style.display = formWrapper.style.display === 'none' ? 'inline-flex' : 'none';
+            if (formWrapper.style.display === 'block') {
+                formWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    if (cancelBtn && formWrapper && toggleBtn) {
+        cancelBtn.addEventListener('click', () => {
+            formWrapper.style.display = 'none';
+            toggleBtn.style.display = 'inline-flex';
+        });
+    }
+
+    // Star selector
+    const starSelector = document.getElementById('starSelector');
+    const ratingInput = document.getElementById('reviewRating');
+
+    if (starSelector && ratingInput) {
+        const stars = starSelector.querySelectorAll('i');
+        let currentRating = 5;
+
+        // Initialize all stars as active
+        stars.forEach(s => s.classList.add('active'));
+
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                currentRating = parseInt(star.dataset.rating);
+                ratingInput.value = currentRating;
+                stars.forEach(s => {
+                    s.classList.toggle('active', parseInt(s.dataset.rating) <= currentRating);
+                });
+            });
+
+            star.addEventListener('mouseenter', () => {
+                const hoverRating = parseInt(star.dataset.rating);
+                stars.forEach(s => {
+                    s.classList.toggle('active', parseInt(s.dataset.rating) <= hoverRating);
+                });
+            });
+        });
+
+        starSelector.addEventListener('mouseleave', () => {
+            stars.forEach(s => {
+                s.classList.toggle('active', parseInt(s.dataset.rating) <= currentRating);
+            });
+        });
+    }
+
+    // Review form submission
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('reviewerName')?.value.trim();
+            const location = document.getElementById('reviewerLocation')?.value.trim();
+            const rating = parseInt(document.getElementById('reviewRating')?.value || '5');
+            const text = document.getElementById('reviewText')?.value.trim();
+
+            if (!name || !text) return;
+
+            const review = {
+                id: 'r_' + Date.now().toString(36),
+                name,
+                location,
+                rating,
+                text,
+                date: new Date().toISOString()
+            };
+
+            saveReview(review);
+            renderReviews();
+            reviewForm.reset();
+
+            // Reset stars
+            if (starSelector) {
+                starSelector.querySelectorAll('i').forEach(s => s.classList.add('active'));
+            }
+            if (ratingInput) ratingInput.value = 5;
+
+            // Hide form, show button
+            if (formWrapper) formWrapper.style.display = 'none';
+            if (toggleBtn) toggleBtn.style.display = 'inline-flex';
+
+            // Show toast
+            showReviewToast('Thank you! Your review has been submitted.');
+        });
+    }
+}
+
+function showReviewToast(message) {
+    // Create toast if it doesn't exist
+    let toast = document.querySelector('.review-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'review-toast';
+        toast.innerHTML = '<i class="fa-solid fa-check-circle"></i> <span></span>';
+        document.body.appendChild(toast);
+    }
+    toast.querySelector('span').textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}

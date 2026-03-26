@@ -150,33 +150,69 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="testimonials-section bg-sand">
+    <!-- Reviews Section -->
+    <section id="reviews" class="testimonials-section bg-sand">
         <div class="container">
             <div class="section-title text-center">
-                <h2>Words from Our Patrons</h2>
+                <span class="eyebrow">Customer Reviews</span>
+                <h2>What Our Patrons Say</h2>
+                <div class="reviews-summary" id="reviewsSummary">
+                    <div class="avg-rating">
+                        <span class="avg-stars" id="avgStars">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </span>
+                        <span class="avg-number" id="avgNumber">5.0</span>
+                        <span class="review-count" id="reviewCount">· 3 reviews</span>
+                    </div>
+                </div>
             </div>
-            <div class="testimonial-grid">
-                <div class="testimonial-card">
-                    <div class="stars">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="review-text">"The vibration of my Heart Chakra singing bowl is profoundly deep. You can feel the authenticity, and their service was exceptional."</p>
-                    <div class="reviewer">- Sarah M., USA</div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="stars">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="review-text">"My White Tara Thangka arrived with its certificate of authenticity. The painting is mesmerizing and brings such a peaceful energy to our home."</p>
-                    <div class="reviewer">- Ananya R., India</div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="stars">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="review-text">"Found an incredible vintage brass statue here. The packaging was extremely secure, a trustworthy destination for high-value antiques."</p>
-                    <div class="reviewer">- David L., UK</div>
+
+            <!-- Reviews Grid (loaded dynamically) -->
+            <div class="testimonial-grid" id="reviewsGrid">
+                <!-- Reviews injected by JS -->
+            </div>
+
+            <!-- Write a Review -->
+            <div class="write-review-section">
+                <button class="btn btn-primary" id="toggleReviewForm">
+                    <i class="fa-solid fa-pen"></i> Write a Review
+                </button>
+
+                <div class="review-form-wrapper" id="reviewFormWrapper" style="display: none;">
+                    <form id="reviewForm" class="review-form">
+                        <h3><i class="fa-solid fa-star"></i> Share Your Experience</h3>
+                        <div class="form-row-review">
+                            <div class="form-group">
+                                <label for="reviewerName">Your Name <span class="required-star">*</span></label>
+                                <input type="text" id="reviewerName" required placeholder="e.g., Priya S.">
+                            </div>
+                            <div class="form-group">
+                                <label for="reviewerLocation">Location</label>
+                                <input type="text" id="reviewerLocation" placeholder="e.g., Mumbai, India">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Your Rating <span class="required-star">*</span></label>
+                            <div class="star-selector" id="starSelector">
+                                <i class="fa-solid fa-star" data-rating="1"></i>
+                                <i class="fa-solid fa-star" data-rating="2"></i>
+                                <i class="fa-solid fa-star" data-rating="3"></i>
+                                <i class="fa-solid fa-star" data-rating="4"></i>
+                                <i class="fa-solid fa-star" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="reviewRating" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="reviewText">Your Review <span class="required-star">*</span></label>
+                            <textarea id="reviewText" rows="4" required placeholder="Tell us about your experience with our products..."></textarea>
+                        </div>
+                        <div class="review-form-actions">
+                            <button type="button" class="btn btn-outline" id="cancelReview">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Review
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
