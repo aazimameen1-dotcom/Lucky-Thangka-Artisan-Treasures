@@ -536,10 +536,10 @@ function initLogin() {
                     // Set login state
                     localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
                     
-                    // Redirect to dashboard with absolute path
+                    // Redirect to admin dashboard with absolute path
                     const currentPath = window.location.pathname;
                     const adminPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-                    window.location.href = adminPath + 'dashboard.html';
+                    window.location.href = adminPath + 'admin.html';
                 } else {
                     // Show error
                     if (loginError) {
