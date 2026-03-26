@@ -571,13 +571,20 @@ function logout() {
 function initDashboard() {
     console.log('Initializing dashboard...');
     
-    // Check auth but don't block - just redirect if not logged in
-    const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
-    if (!isLoggedIn) {
-        console.log('Not logged in, redirecting to login...');
-        window.location.href = 'index.html';
-        return;
-    }
+    // TEMPORARILY DISABLED AUTH CHECK FOR DEBUGGING
+    // Uncomment the lines below to re-enable authentication:
+    // const isLoggedIn = localStorage.getItem(STORAGE_KEYS.isLoggedIn);
+    // if (!isLoggedIn) {
+    //     window.location.href = 'index.html';
+    //     return;
+    // }
+    
+    // Add visible debug message
+    const body = document.body;
+    const debugMsg = document.createElement('div');
+    debugMsg.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#28a745;color:white;padding:10px;z-index:9999;text-align:center;font-weight:bold;';
+    debugMsg.textContent = 'Admin Panel Loaded - Auth temporarily disabled for testing';
+    body.appendChild(debugMsg);
     
     console.log('Dashboard initialized successfully');
 
