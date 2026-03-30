@@ -185,6 +185,59 @@ function getProductById(id) {
 }
 
 // ============================================================
+//  INQUIRIES (from main site contact form)
+// ============================================================
+
+function getInquiries() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.inquiries) || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function renderInquiries() {
+    const list = document.getElementById('inquiriesList');
+    if (!list) return;
+
+    const inquiries = getInquiries();
+    const navBadge = document.getElementById('navInquiryCount');
+    if (navBadge) navBadge.textContent = inquiries.length;
+
+    if (inquiries.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fa-solid fa-envelope-open"></i>
+                </div>
+                <h3>No Inquiries Yet</h3>
+                <p>Customer inquiries from the store will appear here.</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = inquiries.map(i => {
+        const dateStr = i.date ? new Date(i.date).toLocaleString() : '';
+        const safe = (v) => escapeHtml((v || '').toString());
+        return `
+            <div class="inquiry-card" data-inquiry-id="${safe(i.id)}">
+                <div class="inquiry-header">
+                    <h4>${safe(i.name) || 'Customer Inquiry'}</h4>
+                    <time>${safe(dateStr)}</time>
+                </div>
+                <div class="inquiry-body">
+                    ${i.product ? `<p><strong>Product:</strong> ${safe(i.product)}</p>` : ''}
+                    ${i.email ? `<p><strong>Email:</strong> <a href="mailto:${safe(i.email)}">${safe(i.email)}</a></p>` : ''}
+                    ${i.phone ? `<p><strong>Phone:</strong> <a href="tel:${safe(i.phone)}">${safe(i.phone)}</a></p>` : ''}
+                    ${i.message ? `<p><strong>Message:</strong> ${safe(i.message)}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================================
 //  IMAGE HANDLING
 // ============================================================
 
@@ -417,7 +470,7 @@ function renderProducts(searchTerm = '', categoryFilter = 'all') {
     grid.innerHTML = products.map(product => `
         <div class="product-admin-card" data-id="${product.id}">
             <div class="product-image-wrapper" onclick="viewImage('${escapeHtml(product.image || '')}')">
-                <img src="${product.image || '../images/placeholder.png'}" 
+                <img src="${product.image || 'https://via.placeholder.com/400x300/F2EBE0/8B4513?text=No+Image'}" 
                      alt="${escapeHtml(product.name)}" 
                      loading="lazy"
                      onerror="this.src='https://via.placeholder.com/400x300/F2EBE0/8B4513?text=No+Image'">
@@ -559,6 +612,7 @@ async function handleProductSubmit(e) {
 
 function updateDashboard() {
     const products = getProducts();
+    const inquiries = getInquiries();
 
     // Update stats
     const setCount = (id, count) => {
@@ -573,6 +627,7 @@ function updateDashboard() {
 
     // Update nav badge
     setCount('navProductCount', products.length);
+    setCount('navInquiryCount', inquiries.length);
 
     // Update category counts
     const setCatCount = (id, category) => {
@@ -983,6 +1038,7 @@ function initDashboard() {
     // --- Initial Render ---
     renderProducts();
     updateDashboard();
+    renderInquiries();
 
     console.log('Admin dashboard initialized successfully!');
 }

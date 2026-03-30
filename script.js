@@ -181,13 +181,14 @@ function createProductCard(product, theme) {
     if (imageSrc.startsWith('../')) {
         imageSrc = imageSrc.substring(3);
     }
+    const fallbackImage = 'https://via.placeholder.com/400x350/F2EBE0/8B4513?text=Image+Coming+Soon';
 
     return `
         <div class="product-card ${cardClass}">
             <div class="product-image">
-                <img src="${imageSrc || 'images/placeholder.png'}" 
+                <img src="${imageSrc || fallbackImage}" 
                      alt="${escapeHtml(product.name)}"
-                     onerror="this.src='https://via.placeholder.com/400x350/F2EBE0/8B4513?text=Image+Coming+Soon'">
+                     onerror="this.src='${fallbackImage}'">
                 ${product.badge ? `<div class="badge ${badgeClass}">${escapeHtml(product.badge)}</div>` : ''}
             </div>
             <div class="product-info">
